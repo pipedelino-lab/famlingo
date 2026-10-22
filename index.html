@@ -193,6 +193,31 @@ h1,h2,.uf{font-family:Unbounded,Nunito,system-ui,sans-serif;font-weight:800;lett
 #fm-swipe{position:fixed;left:-56px;top:45%;width:52px;height:52px;border-radius:50%;background:var(--acc);color:#fff;z-index:60;display:flex;align-items:center;justify-content:center;font:900 26px Nunito,sans-serif;box-shadow:0 4px 0 var(--acc-d);pointer-events:none;opacity:0}
 .fm-conf{position:fixed;top:-12px;width:10px;height:14px;border-radius:3px;z-index:70;pointer-events:none;animation:fmfall linear forwards}
 @keyframes fmfall{to{transform:translateY(105vh) rotate(720deg)}}
+.fm-today .tch-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.chip.tch{background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.55);box-shadow:none}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ptile{border:0;border-radius:24px;padding:18px 12px;background:var(--sc);box-shadow:0 6px 0 var(--scd);color:#fff;text-align:left;display:flex;flex-direction:column;gap:4px;min-height:132px;transition:transform .07s,box-shadow .07s}
+.ptile:active{transform:translateY(5px);box-shadow:0 1px 0 var(--scd)}
+.ptile i{font-style:normal;font-size:36px;line-height:1.1}
+.ptile b{font:800 16px Unbounded,sans-serif;margin-top:auto}
+.ptile span{font-size:13px;opacity:.9}
+.rbtn{width:100%;display:flex;align-items:center;gap:14px;text-align:left;background:#fff;border:2px solid var(--line);border-radius:22px;box-shadow:0 5px 0 var(--line);padding:16px;margin-bottom:12px;color:var(--ink);transition:transform .07s,box-shadow .07s}
+.rbtn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--line)}
+.rbtn .ri{font-size:36px}.rbtn b{display:block;font:800 15px Unbounded,sans-serif;margin-bottom:2px}.rbtn .small{display:block}
+.rs{font-size:14px;white-space:nowrap}
+.rnum{width:30px;height:30px;border-radius:10px;background:var(--c);color:#fff;font:800 15px Unbounded,sans-serif;display:flex;align-items:center;justify-content:center;float:left;margin:0 10px 4px 0}
+.rt{font-size:17px;line-height:1.25;margin:2px 0 10px}
+.rx{font-size:16px;line-height:1.45;margin-bottom:10px;clear:both}
+.exr{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:2px dashed var(--line)}
+.spk-s{flex:none;width:42px;height:42px;border-radius:14px;border:0;background:var(--acc);box-shadow:0 4px 0 var(--acc-d);font-size:18px;color:#fff;transition:transform .07s,box-shadow .07s}
+.spk-s:active{transform:translateY(4px);box-shadow:0 0 0 var(--acc-d)}
+.why{font-size:15px;line-height:1.4;color:var(--bad-d);margin:0 0 10px;font-weight:700}
+.why:empty{display:none}
+.why-b{margin:0 0 12px}
+.hw{font-size:21px;font-weight:900;margin-bottom:6px;line-height:1.5}
+.hok{color:var(--ok)}.hmiss{color:var(--bad);text-decoration:underline wavy}
+.stars{font-size:40px;margin:-6px 0 14px;letter-spacing:4px}
+.goals{font-size:15px;line-height:1.6;margin-bottom:6px}
 @media (prefers-reduced-motion:reduce){.fm-conf{display:none}.bub{animation:none}}
 </style>
 </head>
@@ -242,6 +267,38 @@ phrases:[['Are you free tomorrow?','Вы свободны завтра?'],['Let 
 ];
 const NODES=[];
 COURSE.forEach((u,ui)=>{u.lessons.forEach((l,li)=>{NODES.push({type:'lesson',id:l.id,unit:ui,lesson:l,num:li+1,of:u.lessons.length});if(li===1)NODES.push({type:'chest',id:u.id+'-chest',unit:ui})});NODES.push({type:'call',id:u.id+'-call',unit:ui,topic:u.call})});
+/* ===================== GUIDEBOOK & ROLEPLAY ===================== */
+const GUIDES={
+u1:{rules:[
+{t:'Глагол to be — «быть»',x:'По-английски нельзя сказать «Я Адиль» без глагола: нужен am / is / are. I am, you are, he / she / it is, we / they are. В речи сокращают: I\'m, you\'re, he\'s.',ex:[['I am from Kazakhstan.','Я из Казахстана.'],['She is my wife.','Она моя жена.'],['We are busy today.','Мы сегодня заняты.']]},
+{t:'Вопрос и отрицание с to be',x:'Вопрос — am / is / are выходят вперёд: Are you…? Is it…? Отрицание — добавляем not: I am not, it is not (isn\'t), you are not (aren\'t).',ex:[['Are you busy?','Ты занят?'],['Is it cold today?','Сегодня холодно?'],['I am not tired.','Я не устал.']]},
+{t:'my, your, his, her, our',x:'«Чей?» — my (мой), your (твой, ваш), his (его), her (её), our (наш). Ставятся прямо перед существительным, без артикля.',ex:[['My name is {NAME}.','Меня зовут {NAME_RU}.'],['What is your name?','Как тебя зовут?'],['Our son likes football.','Наш сын любит футбол.']]}
+],phrases:[['Nice to meet you.','Приятно познакомиться.'],['What do you do?','Чем вы занимаетесь?'],['How was your weekend?','Как прошли выходные?'],['That sounds great!','Звучит отлично!']]},
+u2:{rules:[
+{t:'Вежливая просьба: Can I have…?',x:'В кафе не говорят «Give me». Просят так: Can I have…? или ещё вежливее Could I have…? Слово please — в конце.',ex:[['Can I have a coffee, please?','Можно мне кофе, пожалуйста?'],['Could I have the bill, please?','Можно счёт, пожалуйста?']]},
+{t:'Выбор блюда: I will have / I would like',x:'Когда заказываете: I\'ll have… (Я возьму…) или I\'d like… (Я бы хотел…). Обе формы звучат естественно и вежливо.',ex:[['I will have the fish.','Я возьму рыбу.'],['I would like a salad.','Я бы хотел салат.']]},
+{t:'a / an — один предмет',x:'Перед одним предметом, который можно посчитать, ставят a (перед согласным звуком) или an (перед гласным звуком): a coffee, a cake, an apple, an orange juice.',ex:[['A small tea, please.','Маленький чай, пожалуйста.'],['An orange juice, please.','Апельсиновый сок, пожалуйста.']]}
+],phrases:[['How much is it?','Сколько это стоит?'],['What do you recommend?','Что вы посоветуете?'],['Can I pay by card?','Можно оплатить картой?'],['Keep the change.','Сдачи не надо.']]},
+u3:{rules:[
+{t:'Where is…? Is it far?',x:'Где что-то находится: Where is + место? Далеко ли: Is it far from here? Короткие ответы: Yes, it is. / No, it isn\'t.',ex:[['Where is the station?','Где станция?'],['Is it far from here?','Это далеко отсюда?']]},
+{t:'Указания: глагол в начале',x:'Дорогу объясняют глаголом без «вы»: Go straight. Turn left. Take the bus. Так же просят: Show me, please.',ex:[['Go straight and turn left.','Идите прямо и поверните налево.'],['Take the second street.','Сверните на вторую улицу.']]},
+{t:'Предлоги места',x:'near — рядом, next to — вплотную рядом, opposite — напротив, on the left / on the right — слева / справа.',ex:[['It is near the hotel.','Это рядом с отелем.'],['The bank is on the left.','Банк слева.']]}
+],phrases:[['I have a reservation.','У меня есть бронь.'],['Is breakfast included?','Завтрак включён?'],['What time is check-out?','Во сколько выезд?'],['Can you show me on the map?','Можете показать на карте?']]},
+u4:{rules:[
+{t:'Could you…? — вежливая просьба',x:'В деловом английском просят через Could you…? Это мягче, чем Can you…?, и намного вежливее приказа.',ex:[['Could you call me back?','Не могли бы вы перезвонить?'],['Could you send a sample?','Не могли бы вы отправить образец?']]},
+{t:'will — обещание и решение',x:'Обещаете или решили прямо сейчас: I will (I\'ll) + глагол. Отрицание: I will not (won\'t).',ex:[['I will send you an email.','Я отправлю вам письмо.'],['We will pay next week.','Мы заплатим на следующей неделе.']]},
+{t:'Let\'s… — давайте',x:'Предложить сделать вместе: Let\'s (= let us) + глагол. В речи почти всегда Let\'s.',ex:[['Let us meet at ten.','Давайте встретимся в десять.'],['Let us sign the contract.','Давайте подпишем договор.']]}
+],phrases:[['Hello, this is {NAME} speaking.','Здравствуйте, это {NAME_RU}.'],['What is your best price?','Какая ваша лучшая цена?'],['Sorry, can you repeat that?','Извините, можете повторить?'],['When can you deliver?','Когда вы можете доставить?']]}
+};
+const ROLES=[
+{id:'cafe',ico:'☕',title:'В кафе',sub:'Закажите кофе и десерт',scene:'A cosy café. Lexi is the barista.',goals:['Поздороваться','Заказать кофе: размер, с молоком или без','Спросить цену','Оплатить картой']},
+{id:'hotel',ico:'🏨',title:'Заселение в отель',sub:'Бронь, завтрак, Wi-Fi',scene:'Hotel reception in London. Lexi is the receptionist.',goals:['Сказать, что есть бронь, и назвать имя','Уточнить, на сколько ночей','Спросить, включён ли завтрак','Спросить пароль от Wi-Fi']},
+{id:'taxi',ico:'🚕',title:'Такси из аэропорта',sub:'Адрес, цена, время в пути',scene:'Airport taxi stand in Dubai. Lexi is the taxi driver.',goals:['Назвать отель или адрес','Спросить цену поездки','Спросить, сколько ехать','Попросить чек']},
+{id:'supplier',ico:'🏭',title:'Переговоры с поставщиком',sub:'Цена, образец, сроки',scene:'A video call with a Chinese factory. Lexi is the export sales manager.',goals:['Представиться и назвать компанию','Спросить цену за большую партию','Попросить образец','Договориться о сроке доставки']},
+{id:'party',ico:'🎉',title:'Знакомство в гостях',sub:'Small talk с новым человеком',scene:'A friend\'s birthday party. Lexi is a guest the learner has just met.',goals:['Представиться','Рассказать, чем занимаетесь','Рассказать о семье','Задать встречный вопрос']},
+{id:'doctor',ico:'🩺',title:'У врача в поездке',sub:'Объяснить, что болит',scene:'A small clinic abroad. Lexi is the doctor.',goals:['Сказать, что болит','Сказать, как давно','Спросить, какое лекарство принимать','Спросить, сколько стоит приём']}
+];
+
 /* ===================== THEMES ===================== */
 // [acc, acc-d, acc2, acc2-d, tint, line]
 const THEMES={adil:['#2F6BFF','#1847C2','#00A88F','#007F6C','#E8EFFF','#E4E6F3'],sagi:['#8B5CF6','#6532D8','#FF9F1A','#D97A00','#F1EBFF','#E9E3F7'],chingiz:['#1F2B7B','#111850','#D4AA2E','#9C7A12','#F6F1DE','#E6E2D3'],tamina:['#FF3D7F','#C81E5B','#FF9F1A','#D97A00','#FFEAF2','#F6DCE6'],teal:['#00A88F','#007F6C','#2F6BFF','#1847C2','#E2F7F3','#D9EEEA'],orange:['#F97316','#C2410C','#2F6BFF','#1847C2','#FFEDE0','#F2E2D6']};
@@ -249,12 +306,12 @@ const TH=k=>THEMES[k]||THEMES.adil;
 
 /* ===================== STATE ===================== */
 const LS='famlingo_v1';
-function newProfile(id,name,nameRu,avatar,theme){return {id,name,nameRu,avatar,theme,xp:0,gems:50,streak:0,best:0,lastDay:null,freezes:1,done:{},mistakes:[],quest:{day:null,xp:0,lessons:0,calls:0,claimed:{}},calls:[]}}
+function newProfile(id,name,nameRu,avatar,theme){return {id,name,nameRu,avatar,theme,xp:0,gems:50,streak:0,best:0,lastDay:null,freezes:1,done:{},mistakes:[],quest:{day:null,xp:0,lessons:0,calls:0,claimed:{}},calls:[],legend:{},roles:{}}}
 function load(){try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null}}
 function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
 let S=load()||{v:1,current:null,sound:true,rate:0.95,key:'',model:'gemini-3.8-flash',profiles:{adil:newProfile('adil','Adil','Адиль','🧔','adil'),sagi:newProfile('sagi','Sagi','Саги','👩','sagi')}};
 if(S.model==='gemini-2.5-flash')S.model='gemini-3.8-flash';
-Object.values(S.profiles).forEach(p=>{if(!p.theme)p.theme=THEMES[p.id]?p.id:'teal'});
+Object.values(S.profiles).forEach(p=>{if(!p.theme)p.theme=THEMES[p.id]?p.id:'teal';if(!p.legend)p.legend={};if(!p.roles)p.roles={}});
 if(S.current&&!S.profiles[S.current])S.current=null;
 save();
 const P=()=>S.profiles[S.current];
@@ -321,7 +378,7 @@ function fmBack(){
   if(closeModal())return true;
   if(!S.current)return false;
   if(VIEW==='lesson'){if(L&&L.correct>0&&!L.finished){quitLesson();return true}L=null;goHome();return true}
-  if(VIEW==='call'){endCall();return true}
+  if(VIEW==='call'||VIEW==='role'){endCall();return true}
   if(VIEW==='callend'&&!CALLDONE)return true;
   if(VIEW!=='home'){goHome();return true}
   renderPick();return true;
@@ -366,22 +423,23 @@ if(SELU==null)SELU=ci<NODES.length?NODES[ci].unit:COURSE.length-1;
 const u=COURSE[SELU];const un=NODES.map((n,i)=>[n,i]).filter(x=>x[0].unit===SELU);const doneN=un.filter(x=>p.done[x[0].id]).length;
 const unlocked=un.some(x=>x[1]<=ci);const next=un.find(x=>!p.done[x[0].id]);
 let comp,cta,act='',dis=false;
-if(!unlocked){comp='Сначала пройдите юнит «'+COURSE[SELU-1].title+'»';cta='🔒 Пока закрыто';dis=true}
+if(!unlocked){comp='Юнит пока закрыт. Уже знаете материал? Пройдите тест — не больше 3 ошибок — и юнит откроется.';cta='⏩ Тест: перейти сюда';act=`startTest('jump',${SELU})`}
 else if(next){comp='Дальше: '+nodeLabel(next[0]);cta=doneN?'Продолжить':'Начать';act=`startNode(${next[1]})`}
-else{comp='Юнит пройден! Повторите урок для закрепления · +5 XP';cta='Повторить';act=`replayUnit(${SELU})`}
+else if(!p.legend[u.id]){comp='Юнит пройден! Сделайте его легендарным: тест почти без права на ошибку · +40 XP';cta='👑 Легендарный уровень';act=`startTest('legend',${SELU})`}else{comp='👑 Юнит легендарный! Повторяйте уроки для закрепления · +5 XP';cta='Повторить';act=`replayUnit(${SELU})`}
 const st=streakOf(p);
 let h=`<div class="fm-hero"><div class="avatar">${p.avatar}</div><div><h1>Привет, ${esc(p.nameRu)}!</h1><div class="fm-pills"><span class="fm-pill">🔥 ${st} ${plural(st,'день','дня','дней')} подряд</span><span class="fm-pill">⚡ ${p.xp} XP</span><span class="fm-pill">💎 ${p.gems}</span></div></div></div>`;
-h+=`<div class="fm-rail">${COURSE.map((x,i)=>`<button class="fm-sub${i===SELU?' on':''}" style="--sc:${x.color};--scd:${x.dark}" onclick="SELU=${i};renderHome()"><i>${x.icon}</i>${esc(x.title).replace('Путешествие','Путе\u00ADшествие')}</button>`).join('')}</div>`;
-h+=`<div class="fm-today" style="--sc:${u.color};--scd:${u.dark}"><div class="fox">${fox(64)}</div><div class="lbl">${u.icon} ${esc(u.title)} · юнит ${SELU+1}</div><div class="big">${doneN}<small> / ${un.length}</small></div><div class="bar"><i style="width:${Math.round(100*doneN/un.length)}%"></i></div><div class="comp">${esc(comp)}</div><button class="btn" ${dis?'disabled':''} onclick="${act}">${cta}</button></div>`;
-h+=`<div class="fm-sec">Путь юнита</div><div class="card"><div class="nodes" style="--c:${u.color};--cd:${u.dark}">`;
+h+=`<div class="fm-rail">${COURSE.map((x,i)=>`<button class="fm-sub${i===SELU?' on':''}" style="--sc:${x.color};--scd:${x.dark}" onclick="SELU=${i};renderHome()"><i>${x.icon}</i>${esc(x.title).replace('Путешествие','Путе\u00ADшествие')}${p.legend[x.id]?' 👑':''}</button>`).join('')}</div>`;
+h+=`<div class="fm-today" style="--sc:${u.color};--scd:${u.dark}"><div class="fox">${fox(64)}</div><div class="lbl">${u.icon} ${esc(u.title)} · юнит ${SELU+1}</div><div class="big">${doneN}<small> / ${un.length}</small></div><div class="bar"><i style="width:${Math.round(100*doneN/un.length)}%"></i></div><div class="comp">${esc(comp)}</div><button class="btn" ${dis?'disabled':''} onclick="${act}">${cta}</button><div class="tch-row"><button class="chip tch" onclick="renderGuide(${SELU})">📖 Правила юнита</button>${!next&&unlocked&&!p.legend[u.id]?`<button class="chip tch" onclick="replayUnit(${SELU})">🔁 Повторить урок</button>`:''}</div></div>`;
+h+=`<div class="fm-sec">Путь юнита</div><div class="card"><div class="nodes" style="--c:${p.legend[u.id]?'#F5B400':u.color};--cd:${p.legend[u.id]?'#C08900':u.dark}">`;
 un.forEach(([n,i],k)=>{const done=!!p.done[n.id],cur=i===ci,locked=!done&&!cur;const ico=n.type==='chest'?'🎁':n.type==='call'?'📞':done?'✓':'★';
 h+=`<div class="nw${cur?' cur':''}" style="--x:${OFF[k%8]}px">${cur?`<div class="bub">${n.type==='call'?'ПОЗВОНИТЬ':n.type==='chest'?'ОТКРЫТЬ':'НАЧАТЬ'}</div>`:''}<button class="node${locked?' locked':''}" onclick="tapNode(${i})">${ico}</button></div>`});
 h+=`<div class="pfox" style="${SELU%2?'left':'right'}:4px">${fox(84)}</div></div></div>`;
 const nm=p.mistakes.length;
 h+=`<div class="fm-sec">Практика</div><div class="fm-rail">
 <button class="fm-sub fill" style="--sc:#F97316;--scd:#C2410C" onclick="startCall(-1)"><i>🦊</i>Разговор с Лекси</button>
-<button class="fm-sub fill" style="--sc:#E5484D;--scd:#BE123C" onclick="startMistakes()"><i>🩹</i>Ошибки${nm?' ('+nm+')':''}</button>
-<button class="fm-sub fill" style="--sc:#00A88F;--scd:#007F6C" onclick="randomReplay()"><i>🔁</i>Повтор урока</button></div>`;
+<button class="fm-sub fill" style="--sc:#F5B400;--scd:#C08900" onclick="renderRoles()"><i>🎭</i>Сценки</button>
+<button class="fm-sub fill" style="--sc:#2F6BFF;--scd:#1847C2" onclick="renderPractice()"><i>🏋️</i>Трени&shy;ровки</button>
+<button class="fm-sub fill" style="--sc:#E5484D;--scd:#BE123C" onclick="startMistakes()"><i>🩹</i>Ошибки${nm?' ('+nm+')':''}</button></div>`;
 h+=`<div class="fm-sec">Задания на сегодня</div><div class="card">${QUESTS.map(x=>{const v=Math.min(p.quest[x.k],x.g),full=v>=x.g,cl=p.quest.claimed[x.id];return `<div class="row qrow"><div style="font-size:30px">${x.ico}</div><div class="grow">${x.t}<div class="qbar"><i style="width:${100*v/x.g}%"></i></div><div class="small">${v} / ${x.g}</div></div><button class="chip acc" ${full&&!cl?'':'disabled'} onclick="claim('${x.id}')">${cl?'✓':'+10 💎'}</button></div>`}).join('')}
 <div class="row qrow"><div style="font-size:30px">🧊</div><div class="grow">Заморозка серии<div class="small">Спасает серию при пропуске дня · ${p.freezes}/2</div></div><button class="chip acc" ${p.gems>=50&&p.freezes<2?'':'disabled'} onclick="buyFreeze()">50 💎</button></div></div>`;
 h+=`<div class="fm-sec">Семья</div><div class="card">${Object.values(S.profiles).sort((a,b)=>b.xp-a.xp).map((q,i)=>`<div class="row qrow"><div class="mini-av" style="--k:${TH(q.theme)[0]};background:${TH(q.theme)[4]}">${q.avatar}</div><div class="grow">${i===0&&q.xp>0?'👑 ':''}${esc(q.nameRu)}${q.id===p.id?' (вы)':''}<div class="small">🔥 ${streakOf(q)} · рекорд ${q.best}</div></div><div class="uf" style="color:${TH(q.theme)[0]}">${q.xp}</div></div>`).join('')}<div class="small" style="margin-top:8px">Прогресс хранится на этом телефоне. Общая таблица семьи — следующим шагом через Firebase.</div></div>`;
@@ -434,12 +492,12 @@ const lb=h=>document.getElementById('lbody').innerHTML=h;
 function updateBar(){const pct=Math.min(100,100*L.correct/L.total);const f=document.getElementById('fill');if(f)f.style.width=pct+'%';const g=document.getElementById('fmprog');if(g)g.style.width=pct+'%';const c=document.getElementById('fmcnt');if(c)c.textContent=Math.min(L.correct+1,L.total)+'/'+L.total}
 function renderEx(){const e=L.items[L.idx];L.answered=false;L.check=null;L.speakFails=0;document.getElementById('sheet').innerHTML='';setReady(false,true);updateBar();
 if(e.type==='pic')exPic(e);else if(e.type==='build'||e.type==='listen')exBuild(e);else if(e.type==='match')exMatch(e);else exSpeak(e);window.scrollTo(0,0)}
-function exPic(e){lb(`<h2 class="ex-title">Выберите «${esc(e.prompt)}»</h2><div class="pic-grid">${e.options.map((o,i)=>`<button class="pic" onclick="pickCard(${i})"><div class="emo">${o[2]}</div><div class="cw">${esc(o[0])}</div></button>`).join('')}</div>`);L.sel=null;L.check=()=>({ok:e.options[L.sel][0]===e.answer,answer:e.answer})}
+function exPic(e){lb(`<h2 class="ex-title">Выберите «${esc(e.prompt)}»</h2><div class="pic-grid">${e.options.map((o,i)=>`<button class="pic" onclick="pickCard(${i})"><div class="emo">${o[2]}</div><div class="cw">${esc(o[0])}</div></button>`).join('')}</div>`);L.sel=null;L.check=()=>({ok:e.options[L.sel][0]===e.answer,answer:e.answer,user:e.options[L.sel][0]})}
 function pickCard(i){if(L.answered)return;L.sel=i;document.querySelectorAll('.pic').forEach((c,j)=>c.classList.toggle('sel',j===i));say(L.items[L.idx].options[i][0]);setReady(true)}
 function exBuild(e){const listen=e.type==='listen';
 const head=listen?`<h2 class="ex-title">Нажмите, что услышали</h2><div class="audio-row"><button class="spk" onclick="say(L.items[L.idx].answer)">🔊</button><button class="spk slow" onclick="say(L.items[L.idx].answer,0.6)">🐢</button></div>`:`<h2 class="ex-title">Переведите предложение</h2><div class="say-row">${fox(78)}<div class="bubble">${esc(e.prompt)}</div></div>`;
 lb(head+`<div class="answer" id="ans"></div><div class="bank">${e.tiles.map((t,i)=>`<span class="slot"><button class="tile" id="t${i}" onclick="tapTile(${i})">${esc(t)}</button></span>`).join('')}</div>`);
-L.chosen=[];L.check=()=>({ok:norm(L.chosen.map(i=>e.tiles[i]).join(' '))===norm(e.answer),answer:e.answer});if(listen)setTimeout(()=>say(e.answer),400)}
+L.chosen=[];L.check=()=>{const u=L.chosen.map(i=>e.tiles[i]).join(' ');return {ok:norm(u)===norm(e.answer),answer:e.answer,user:u}};if(listen)setTimeout(()=>say(e.answer),400)}
 function tapTile(i){if(L.answered)return;const e=L.items[L.idx];const k=L.chosen.indexOf(i);if(k>=0)L.chosen.splice(k,1);else{L.chosen.push(i);if(e.type==='build')say(e.tiles[i])}SND.tap();
 document.getElementById('ans').innerHTML=L.chosen.map(j=>`<button class="tile" onclick="tapTile(${j})">${esc(e.tiles[j])}</button>`).join('');e.tiles.forEach((t,j)=>document.getElementById('t'+j).classList.toggle('used',L.chosen.includes(j)));setReady(L.chosen.length>0)}
 function exMatch(e){const L1=e.pairs.map((p,i)=>[p[0],i]),R=shuffle(e.pairs.map((p,i)=>[p[1],i]));const btn=(x,s)=>`<button class="tile m" data-s="${s}" data-k="${x[1]}" onclick="tapMatch(this)">${esc(x[0])}</button>`;
@@ -454,25 +512,26 @@ lb(`<h2 class="ex-title">Произнесите это предложение</h
 setReady(false,false);setTimeout(()=>say(e.text),400)}
 async function speakTry(){const e=L.items[L.idx],m=document.getElementById('mic');if(!SR)return toast('Распознавание речи недоступно. Откройте в Chrome.');if(m.classList.contains('rec'))return;
 hush();m.classList.add('rec');m.querySelector('span').textContent='Говорите…';
-try{const alts=await listenOnce();if(!L||VIEW!=='lesson')return;m.classList.remove('rec');const best=alts.map(a=>[a,similar(e.text,a)]).sort((x,y)=>y[1]-x[1])[0];document.getElementById('heard').textContent='Вы сказали: «'+best[0]+'»';
-if(best[1]>=0.7)showResult({ok:true,answer:e.text});else{L.speakFails++;if(L.speakFails>=3)showResult({ok:false,answer:e.text,soft:true});else{m.querySelector('span').textContent='Почти! Ещё раз';SND.bad()}}}
+try{const alts=await listenOnce();if(!L||VIEW!=='lesson')return;m.classList.remove('rec');const best=alts.map(a=>[a,similar(e.text,a)]).sort((x,y)=>y[1]-x[1])[0];const said=new Set(norm(best[0]).split(' '));const tw=words(e.text);const miss=tw.filter(w=>!said.has(norm(w)));L.lastHeard=best[0];
+document.getElementById('heard').innerHTML='<div class="hw">'+tw.map(w=>'<span class="'+(said.has(norm(w))?'hok':'hmiss')+'">'+esc(w)+'</span>').join(' ')+'</div><div class="small">Телефон услышал: «'+esc(best[0])+'»</div>';
+if(best[1]>=0.85)showResult({ok:true,answer:e.text,user:best[0]});else{L.speakFails++;if(L.speakFails>=3)showResult({ok:false,answer:e.text,soft:true,user:best[0]});else{m.querySelector('span').textContent='Повторите — красные слова не разобраны';SND.bad();setTimeout(()=>say(miss.join(', '),0.7),450)}}}
 catch(err){if(!document.getElementById('mic'))return;m.classList.remove('rec');m.querySelector('span').textContent=err==='not-allowed'?'Нет доступа к микрофону':'Не расслышала — ещё раз'}}
 function skipSpeak(){L.noSpeak=true;L.correct++;nextEx()}
 function doCheck(){if(!L.check||L.answered)return;showResult(L.check())}
 const PRAISE=['Отлично!','Великолепно!','Так держать!','Супер!','Верно!','Прекрасно!'];
-function showResult(r){if(L.answered)return;L.answered=true;const e=L.items[L.idx];
+function showResult(r){if(L.answered)return;L.answered=true;L.lastR=r;const e=L.items[L.idx];
 if(r.ok){L.correct++;L.combo++;L.maxCombo=Math.max(L.maxCombo,L.combo);SND.ok();if(e.fromMistake){const p=P();p.mistakes=p.mistakes.filter(m=>m[0]!==(e.answer||e.text))}
 if([3,5,8,10,15].includes(L.combo)){const c=document.getElementById('combo');c.textContent='🔥 '+L.combo+' ПОДРЯД!';c.classList.remove('on');void c.offsetWidth;c.classList.add('on');setTimeout(()=>c.classList.remove('on'),1800);setTimeout(SND.combo,250)}}
-else{L.wrong++;L.combo=0;SND.bad();if(r.soft)L.correct++;else{L.items.push(Object.assign({},e));recordMistake(e)}}
+else{L.wrong++;L.combo=0;SND.bad();if(!r.soft||e.type==='speak')recordMistake(e);if(r.soft||L.maxWrong!=null)L.correct++;else L.items.push(Object.assign({},e))}
 updateBar();setReady(false,false);
-document.getElementById('sheet').innerHTML=`<div class="sheet ${r.ok?'ok':'bad'}"><div class="s-head">${r.ok?'✔ '+PRAISE[rnd(0,PRAISE.length-1)]:'✖ Неправильно'}</div>${!r.ok&&r.answer?`<div class="s-lbl">Правильный ответ:</div><div class="s-ans">${esc(r.answer)}</div>`:r.ok&&e.type==='build'?`<div class="s-ans">${esc(e.answer)}</div>`:''}<button class="btn ${r.ok?'ok':'bad'}" onclick="nextEx()">Продолжить</button></div>`;
+document.getElementById('sheet').innerHTML=`<div class="sheet ${r.ok?'ok':'bad'}"><div class="s-head">${r.ok?'✔ '+PRAISE[rnd(0,PRAISE.length-1)]:'✖ Неправильно'}</div>${!r.ok&&r.answer?`<div class="s-lbl">Правильный ответ:</div><div class="s-ans">${esc(r.answer)}</div>`:r.ok&&e.type==='build'?`<div class="s-ans">${esc(e.answer)}</div>`:''}${!r.ok&&r.answer&&e.type!=='match'?'<div class="why" id="why"></div><button class="chip why-b" onclick="explain()">🤔 Почему так?</button>':''}${L.maxWrong!=null&&!r.ok?'<div class="s-lbl" style="margin-bottom:10px">Ошибок: '+L.wrong+' из '+L.maxWrong+' допустимых</div>':''}<button class="btn ${r.ok?'ok':'bad'}" onclick="nextEx()">Продолжить</button></div>`;
 if(!r.ok&&r.answer)say(r.answer)}
-function nextEx(){stopRec();L.idx++;if(L.idx>=L.items.length)return finishLesson();renderEx()}
+function nextEx(){stopRec();if(L.maxWrong!=null&&L.wrong>L.maxWrong)return failTest();L.idx++;if(L.idx>=L.items.length)return finishLesson();renderEx()}
 function finishLesson(){const p=P();L.finished=true;const acc=Math.round(100*L.total/(L.total+L.wrong));const secs=Math.round((Date.now()-L.start)/1000);
-let xp=L.mode==='replay'?5:10;if(L.mode==='new'&&L.wrong===0)xp+=5;const nd=addXP(xp);ensureQuest();
-if(L.node&&L.mode==='new')p.done[L.node.id]=true;if(L.mode!=='mistakes')p.quest.lessons++;save();
+let xp={replay:5,practice:5,legend:40,jump:20}[L.mode]||10;if(L.mode==='new'&&L.wrong===0)xp+=5;const nd=addXP(xp);ensureQuest();
+if(L.node&&L.mode==='new')p.done[L.node.id]=true;if(L.mode==='legend')p.legend[COURSE[L.unit].id]=true;if(L.mode==='jump'){NODES.forEach(n=>{if(n.unit<L.unit)p.done[n.id]=true});SELU=L.unit}if(L.mode!=='mistakes')p.quest.lessons++;save();
 SND.win();confetti();
-show('end',`<div class="center">${fox(140)}<div class="big2">${L.wrong===0?'Идеальный урок!':'Урок пройден!'}</div><div class="stats"><div class="stat" style="--c:#F5B400"><div class="h">ВСЕГО XP</div><div class="v">⚡${xp}</div></div><div class="stat" style="--c:var(--ok)"><div class="h">ТОЧНОСТЬ</div><div class="v">${acc}%</div></div><div class="stat" style="--c:var(--acc)"><div class="h">ВРЕМЯ</div><div class="v">${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}</div></div></div>${L.maxCombo>=5?`<div class="small" style="margin-top:16px">🔥 Лучшая серия: ${L.maxCombo} ответов подряд</div>`:''}</div><div class="foot"><button class="btn" onclick="${nd?'streakScreen()':'goHome()'}">Продолжить</button></div>`,{title:'Итог урока',sub:L.title})}
+show('end',`<div class="center">${fox(140)}<div class="big2">${L.mode==='legend'?'👑 Юнит легендарный!':L.mode==='jump'?'⏩ Юнит открыт!':L.wrong===0?'Идеальный урок!':'Урок пройден!'}</div><div class="stats"><div class="stat" style="--c:#F5B400"><div class="h">ВСЕГО XP</div><div class="v">⚡${xp}</div></div><div class="stat" style="--c:var(--ok)"><div class="h">ТОЧНОСТЬ</div><div class="v">${acc}%</div></div><div class="stat" style="--c:var(--acc)"><div class="h">ВРЕМЯ</div><div class="v">${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}</div></div></div>${L.maxCombo>=5?`<div class="small" style="margin-top:16px">🔥 Лучшая серия: ${L.maxCombo} ответов подряд</div>`:''}</div><div class="foot"><button class="btn" onclick="${nd?'streakScreen()':'goHome()'}">Продолжить</button></div>`,{title:'Итог урока',sub:L.title})}
 function streakScreen(){const p=P();SND.chest();show('streak',`<div class="center"><div class="flame">🔥</div><div class="streaknum">${p.streak}</div><div class="big2" style="color:#F97316;margin:8px 0 14px">${plural(p.streak,'день','дня','дней')} подряд!</div><div class="small">${p.streak===1?'Начало положено. Возвращайтесь завтра, чтобы не прервать серию.':'Не прерывайте серию — занимайтесь каждый день.'}${p.freezes?' Заморозок в запасе: '+p.freezes+'.':''}</div></div><div class="foot"><button class="btn" onclick="goHome()">Продолжить</button></div>`,{title:'Серия дней',sub:p.nameRu})}
 function openChest(n){const g=rnd(10,30);modal(`<div class="chest shake" id="ch">🎁</div><div id="cr" class="mtitle" style="min-height:30px"></div><button class="btn" id="cb" onclick="closeModal();renderHome()" style="visibility:hidden">Забрать</button>`,true);
 setTimeout(()=>{const p=P();p.done[n.id]=true;p.gems+=g;save();SND.chest();confetti();const ch=document.getElementById('ch');if(!ch)return renderHome();ch.textContent='💎';document.getElementById('cr').textContent='+'+g+' кристаллов!';document.getElementById('cb').style.visibility='visible'},1100)}
@@ -489,11 +548,13 @@ function callSystem(){const p=P();const recent=p.calls.slice(-2).map(c=>c.fb).jo
 return `You are Lexi, a warm, cheerful English conversation partner (a friendly fox character) in a private family language-learning app. The learner is ${p.name}, from Almaty, Kazakhstan, native Russian speaker, level A2: reads and understands basic English but is learning to SPEAK.
 Scenario: ${C.topic}
 Rules: speak only English. Reply in 1-2 short sentences, maximum 25 words. Use simple everyday words. Always end with one simple question so the learner keeps talking. Never point out mistakes during the conversation; instead naturally repeat the correct form in your reply. If the learner uses Russian or seems stuck, give a very short simple English hint of what they could say. This text will be read aloud: no emojis, no lists, no markdown.`+(recent?`\nRecent feedback for this learner (gently give chances to practise these points):\n${recent}`:'')}
-function startCall(i){const n=i>=0?NODES[i]:null;hush();
-C={node:n,topic:n?n.topic:'Free conversation about everyday life: family, work, hobbies, plans, travel. Let the learner choose the topic.',history:[{role:'user',text:'(The learner has just joined the call. Greet them by name and start the conversation.)'}],turns:0,busy:false,repeat:!!(n&&P().done[n.id])};
-show('call',`<div class="call-av"><div class="ring" id="ring">${fox(120)}</div><div class="uf" style="font-size:20px">Lexi</div><div class="status" id="st"></div></div><div class="chat" id="chat"></div>
+function startCall(i){const n=i>=0?NODES[i]:null;startConv({kind:'call',node:n,topic:n?n.topic:'Free conversation about everyday life: family, work, hobbies, plans, travel. Let the learner choose the topic.',title:'Звонок Лекси',sub:n?COURSE[n.unit].title:'Свободный разговор',repeat:!!(n&&P().done[n.id])})}
+function startConv(cfg){hush();
+C=Object.assign({history:[{role:'user',text:'(The learner has just joined. Greet them by name and start.)'}],turns:0,busy:false},cfg);
+const goals=C.kind==='role'?`<div class="card goals"><div class="small">Цели сценки</div>${C.role.goals.map(g=>'☐ '+esc(g)).join('<br>')}</div>`:'';
+show(C.kind==='role'?'role':'call',`<div class="call-av"><div class="ring" id="ring">${fox(C.kind==='role'?90:120)}</div><div class="uf" style="font-size:20px">Lexi</div><div class="status" id="st"></div></div>${goals}<div class="chat" id="chat"></div>
 <div class="foot"><button class="bigmic" id="bm" onclick="userTurn()" ${SR?'':'style="display:none"'}>🎤</button><div class="trow"><input class="field" id="ti" placeholder="${SR?'…или напишите ответ':'Напишите ответ по-английски'}" onkeydown="if(event.key==='Enter')typeTurn()"><button class="chip acc" onclick="typeTurn()">➤</button></div></div>`,
-{title:'Звонок Лекси',sub:n?COURSE[n.unit].title:'Свободный разговор',right:`<button class="chip acc" onclick="endCall()">Завершить</button>`});
+{title:C.title,sub:C.sub,right:`<button class="chip acc" onclick="endCall()">Завершить</button>`});
 if(!S.key){st('Нужен ключ Gemini API');document.getElementById('chat').innerHTML=`<div class="card">Чтобы говорить с Лекси, вставьте бесплатный ключ Gemini API в ⚙️ Настройках (aistudio.google.com → Get API key).</div>`;return}
 aiTurn()}
 const st=t=>{const e=document.getElementById('st');if(e)e.textContent=t};
@@ -508,15 +569,58 @@ try{const alts=await listenOnce();if(C!==my)return;b.classList.remove('rec');pus
 function typeTurn(){const i=document.getElementById('ti');const t=i.value.trim();if(!t||!C||C.busy)return;i.value='';hush();pushUser(t)}
 function pushUser(t){bubble('me',t);C.history.push({role:'user',text:t});C.turns++;aiTurn()}
 async function endCall(){stopRec();hush();if(!C)return goHome();
-if(C.turns<2){toast('Скажите хотя бы 2 фразы, чтобы звонок засчитался');return goHome()}
-const c=C;C=null;CALLDONE=false;
-show('callend',`<div class="center">${fox(110)}<div class="big2" style="color:#F97316">Звонок завершён!</div><div class="card fb" id="fb" style="width:100%">Лекси готовит разбор…</div></div><div class="foot"><button class="btn" id="fbb" disabled onclick="goHome()">Продолжить</button></div>`,{title:'Разбор звонка',sub:'Лекси'});
+if(C.turns<2){toast('Скажите хотя бы 2 фразы, чтобы засчиталось');return goHome()}
+const c=C;C=null;CALLDONE=false;const role=c.kind==='role';
+show('callend',`<div class="center">${fox(110)}<div class="big2" style="color:#F97316">${role?'Сценка завершена!':'Звонок завершён!'}</div><div class="stars" id="stars"></div><div class="card fb" id="fb" style="width:100%">Лекси готовит разбор…</div></div><div class="foot"><button class="btn" id="fbb" disabled onclick="goHome()">Продолжить</button></div>`,{title:role?'Итог сценки':'Разбор звонка',sub:role?c.role.title:'Лекси'});
 const learner=c.history.filter((m,i)=>m.role==='user'&&i>0).map(m=>'- '+m.text).join('\n');
-let fb='';try{fb=await gemini('You are a kind, precise English teacher for an adult Russian-speaking learner (A2). Answer in Russian.',[{role:'user',text:`Фразы ученика из разговора на английском:\n${learner}\n\nДай короткий разбор: 1 строка похвалы, затем до 3 главных ошибок строго в формате «❌ как сказал → ✅ как правильно — кратко почему». Если ошибок нет, скажи это и предложи одну фразу посложнее для следующего раза. Без вступлений, до 90 слов.`}],2048)}catch(e){fb='Разбор не получился: '+e.message}
-const p=P();p.calls.push({d:today(),fb:fb.slice(0,400)});if(p.calls.length>5)p.calls.shift();
-const xp=c.repeat?5:15;const nd=addXP(xp);ensureQuest();p.quest.calls++;if(c.node&&!c.repeat)p.done[c.node.id]=true;save();CALLDONE=true;
+const ask=role?`Сценка: «${c.role.title}». Цели ученика: ${c.role.goals.join('; ')}.\nФразы ученика:\n${learner}\n\nОтветь строго в таком виде:\nЗВЁЗДЫ: N\n(N от 1 до 3: 3 — все цели достигнуты почти без ошибок, 2 — большинство целей, 1 — мало.)\nЗатем по строке на каждую цель: «✅ цель» или «❌ цель».\nЗатем до 3 главных ошибок в формате «❌ как сказал → ✅ как правильно — кратко почему». Без вступлений, до 120 слов.`
+:`Фразы ученика из разговора на английском:\n${learner}\n\nДай короткий разбор: 1 строка похвалы, затем до 3 главных ошибок строго в формате «❌ как сказал → ✅ как правильно — кратко почему». Если ошибок нет, скажи это и предложи одну фразу посложнее для следующего раза. Без вступлений, до 90 слов.`;
+let fb='',okfb=true;try{fb=await gemini('You are a kind, precise English teacher for an adult Russian-speaking learner (A2). Answer in Russian.',[{role:'user',text:ask}],2048)}catch(e){fb='Разбор не получился: '+e.message;okfb=false}
+let stars=0;if(role&&okfb){const mm=fb.match(/ЗВ[ЁЕ]ЗДЫ\s*:\s*(\d)/i);stars=mm?Math.max(1,Math.min(3,+mm[1])):1;fb=fb.replace(/^.*ЗВ[ЁЕ]ЗДЫ.*(\n|$)/im,'').replace(/^\(N от.*(\n|$)/im,'').trim()}
+const p=P();if(okfb){p.calls.push({d:today(),fb:fb.slice(0,400)});if(p.calls.length>5)p.calls.shift()}
+const xp=role?10+5*stars:c.repeat?5:15;if(role)p.roles[c.role.id]=Math.max(p.roles[c.role.id]||0,stars);
+const nd=addXP(xp);ensureQuest();p.quest.calls++;if(c.node&&!c.repeat)p.done[c.node.id]=true;save();CALLDONE=true;
 if(VIEW!=='callend')return;SND.win();confetti();
+if(role&&stars)document.getElementById('stars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
 document.getElementById('fb').textContent=fb+`\n\n⚡ +${xp} XP`;const b=document.getElementById('fbb');b.disabled=false;if(nd)b.setAttribute('onclick','streakScreen()')}
+
+/* ===================== STAGE 1: GUIDE / PRACTICE / TESTS / ROLEPLAY / WHY ===================== */
+function exRow(x){const en=tx(x[0]),ru=tx(x[1]);return `<div class="exr"><button class="spk-s" data-t="${esc(en)}" onclick="say(this.dataset.t)">🔊</button><div><b>${esc(en)}</b><div class="small">${esc(ru)}</div></div></div>`}
+function renderGuide(ui){const u=COURSE[ui],g=GUIDES[u.id];
+show('guide',`<div class="fm-today" style="--sc:${u.color};--scd:${u.dark}"><div class="lbl">📖 Путеводитель · юнит ${ui+1}</div><div class="big" style="font-size:28px">${u.icon} ${esc(u.title)}</div><div class="comp" style="margin-bottom:0">Короткие правила и ключевые фразы. Нажмите 🔊, чтобы послушать.</div></div>`+
+g.rules.map((r,k)=>`<div class="card"><div class="rnum" style="--c:${u.color}">${k+1}</div><h2 class="rt">${esc(r.t)}</h2><div class="rx">${esc(r.x)}</div>${r.ex.map(exRow).join('')}</div>`).join('')+
+`<div class="fm-sec">Ключевые фразы</div><div class="card">${g.phrases.map(exRow).join('')}</div><button class="btn" onclick="goHome()">Понятно</button>`,{title:'Правила юнита',sub:u.title})}
+
+function learnedLessons(){const p=P();const ls=COURSE.flatMap(u=>u.lessons).filter(l=>p.done[l.id]);return ls.length?ls:[COURSE[0].lessons[0]]}
+function uniqWords(ls){const seenE=new Set(),seenR=new Set();return shuffle(ls.flatMap(l=>l.words)).filter(w=>{if(seenE.has(w[0])||seenR.has(w[1]))return false;seenE.add(w[0]);seenR.add(w[1]);return true})}
+function renderPractice(){const n=P().mistakes.length;
+const T=[["startPractice('speak')",'🗣️','Говорение','8 фраз вслух','#2F6BFF','#1847C2'],["startPractice('listen')",'🎧','Аудирование','8 фраз на слух','#8B5CF6','#6532D8'],["startPractice('words')",'🔤','Слова','Картинки и пары','#00A88F','#007F6C'],['startMistakes()','🩹','Ошибки',n?n+' фраз':'пока нет','#E5484D','#BE123C'],['startCall(-1)','🦊','Лекси','Разговор голосом','#F97316','#C2410C'],['renderRoles()','🎭','Сценки','Ролевые диалоги','#F5B400','#C08900']];
+show('practice',`<div class="small" style="margin:0 2px 12px">Тренировки по пройденным урокам — без нового материала. +5 XP за каждую.</div><div class="pgrid">${T.map(t=>`<button class="ptile" style="--sc:${t[4]};--scd:${t[5]}" onclick="${t[0]}"><i>${t[1]}</i><b>${t[2]}</b><span>${t[3]}</span></button>`).join('')}</div>`,{title:'Практика',sub:'Тренировки'})}
+function startPractice(kind){const ls=learnedLessons();const ph=shuffle(ls.flatMap(l=>l.phrases.map(p=>[tx(p[0]),tx(p[1])])));const W=uniqWords(ls);const pool=ph.flatMap(p=>words(p[0]));let items=[];
+if(kind==='speak')items=ph.slice(0,8).map(p=>({type:'speak',text:p[0],ru:p[1]}));
+else if(kind==='listen')items=ph.slice(0,8).map(p=>mkBuild('listen',p[0],p[1],pool));
+else{for(let k=0;k<6;k++){const ans=W[k%W.length];items.push({type:'pic',prompt:ans[1],answer:ans[0],options:shuffle([ans].concat(shuffle(W.filter(w=>w!==ans)).slice(0,3)))})}items.splice(3,0,{type:'match',pairs:W.slice(0,5)});items.push({type:'match',pairs:shuffle(W).slice(0,5)})}
+L={node:null,mode:'practice',items,idx:0,correct:0,total:items.length,combo:0,maxCombo:0,wrong:0,start:Date.now(),title:{speak:'Говорение',listen:'Аудирование',words:'Слова'}[kind],sub:'Практика'};lessonShell()}
+
+function buildTest(ui,n){const items=[];COURSE[ui].lessons.forEach(l=>{const ph=shuffle(l.phrases.map(p=>[tx(p[0]),tx(p[1])]));const pool=ph.flatMap(p=>words(p[0]));
+items.push(mkBuild('build',ph[0][0],ph[0][1],pool),mkBuild('listen',ph[1][0],ph[1][1],pool),mkBuild('build',ph[2][0],ph[2][1],pool));
+const W=l.words,ans=W[rnd(0,W.length-1)];items.push({type:'pic',prompt:ans[1],answer:ans[0],options:shuffle([ans].concat(shuffle(W.filter(w=>w!==ans)).slice(0,3)))})});return shuffle(items).slice(0,n)}
+function startTest(kind,ui){const leg=kind==='legend';const items=buildTest(ui,leg?15:12);
+L={node:null,mode:kind,unit:ui,items,idx:0,correct:0,total:items.length,combo:0,maxCombo:0,wrong:0,start:Date.now(),maxWrong:leg?1:3,title:(leg?'👑 ':'⏩ ')+COURSE[ui].title,sub:leg?'Легендарный: не больше 1 ошибки':'Тест: не больше 3 ошибок'};
+modal(`<div class="chest">${leg?'👑':'⏩'}</div><div class="mtitle">${leg?'Легендарный уровень':'Перейти к юниту «'+esc(COURSE[ui].title)+'»?'}</div><div class="small" style="margin-bottom:16px">${leg?items.length+' заданий по всему юниту. Можно ошибиться только 1 раз. Награда — золотой юнит и +40 XP.':items.length+' заданий. Не больше 3 ошибок — и все предыдущие юниты будут засчитаны.'}</div><button class="btn" onclick="closeModal();lessonShell()">Начать тест</button><button class="link" onclick="closeModal();L=null">Не сейчас</button>`,true)}
+function failTest(){const leg=L.mode==='legend',ui=L.unit;SND.bad();
+show('end',`<div class="center">${fox(130)}<div class="big2" style="color:var(--bad)">Почти получилось!</div><div class="card" style="width:100%">Ошибок больше, чем ${L.maxWrong}. ${leg?'Повторите уроки юнита и попробуйте снова — золото того стоит.':'Пройдите юнит по порядку или попробуйте тест ещё раз.'}</div></div><div class="foot"><button class="btn" onclick="startTest('${L.mode}',${ui})">Ещё раз</button><button class="link" onclick="goHome()">На главную</button></div>`,{title:'Тест не пройден',sub:COURSE[ui].title});L.finished=true}
+
+async function explain(){const r=L.lastR,e=L.items[L.idx];const w=document.getElementById('why'),b=document.querySelector('.why-b');if(!w||w.dataset.on)return;w.dataset.on=1;if(b)b.remove();
+if(!S.key){w.textContent='Нужен ключ Gemini в ⚙️ Настройках.';return}w.textContent='Лекси объясняет…';
+const task=e.type==='pic'?'выбрать английское слово для «'+e.prompt+'»':e.type==='speak'?'произнести фразу «'+e.text+'» ('+e.ru+')':e.type==='listen'?'записать услышанную фразу':'перевести на английский: «'+e.prompt+'»';
+const q=`Задание: ${task}.\nОтвет ученика: «${r.user||'—'}».\nПравильный ответ: «${r.answer}».\nОбъясни по-русски, в чём ошибка ученика и какое правило здесь работает. 2–3 коротких предложения, до 50 слов, без вступлений и без повтора задания.`;
+try{const t=await gemini('Ты добрый и точный учитель английского для взрослого русскоязычного ученика уровня A2.',[{role:'user',text:q}],1024);if(document.getElementById('why')===w)w.textContent='🦊 '+t}catch(err){w.textContent='Не получилось: '+err.message}}
+
+function renderRoles(){const p=P();
+show('roles',`<div class="small" style="margin:0 2px 12px">Ролевые диалоги с Лекси. У каждой сценки свои цели — в конце звёзды и разбор ошибок.</div>`+ROLES.map(r=>{const s=p.roles[r.id]||0;return `<button class="rbtn" onclick="startRole('${r.id}')"><span class="ri">${r.ico}</span><span class="grow"><b>${esc(r.title)}</b><span class="small">${esc(r.sub)}</span></span><span class="rs">${'⭐'.repeat(s)}${'<span style="opacity:.3">⭐</span>'.repeat(3-s)}</span></button>`}).join(''),{title:'Сценки',sub:'Ролевые диалоги'})}
+function startRole(id){const r=ROLES.find(x=>x.id===id);
+startConv({kind:'role',role:r,topic:r.scene+' The learner has these goals: '+r.goals.join('; ')+'. Play your role naturally, stay in the scene, and lead the learner step by step through the goals without listing them.',title:r.ico+' '+r.title,sub:'Сценка'})}
 
 render();
 </script>
