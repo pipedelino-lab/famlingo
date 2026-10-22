@@ -218,6 +218,24 @@ h1,h2,.uf{font-family:Unbounded,Nunito,system-ui,sans-serif;font-weight:800;lett
 .hok{color:var(--ok)}.hmiss{color:var(--bad);text-decoration:underline wavy}
 .stars{font-size:40px;margin:-6px 0 14px;letter-spacing:4px}
 .goals{font-size:15px;line-height:1.6;margin-bottom:6px}
+.feed{padding-bottom:110px}
+.sl{display:flex;gap:10px;align-items:flex-start;margin:12px 0;animation:fade .25s}
+.sav{flex:none;width:46px;height:46px;border-radius:50%;background:#fff;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:26px}
+.sb{background:#fff;border:2px solid var(--line);box-shadow:0 3px 0 var(--line);border-radius:18px;padding:10px 14px;flex:1}
+.sn{font:800 12px Unbounded,sans-serif;color:var(--acc);margin-bottom:3px}
+.se{font-size:17px;line-height:1.4}
+.sr{display:none;color:var(--muted);font-size:14px;margin-top:6px}
+.open .sr{display:block}
+.snar{text-align:center;font-style:italic;color:var(--muted);margin:16px 6px;font-size:16px;animation:fade .25s}
+.blank{display:inline-block;min-width:60px;border-bottom:3px solid var(--acc);color:var(--acc)}
+.blank.filled{border-bottom-color:var(--ok);color:var(--ok-d);font-weight:900}
+.sopts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sq{animation:fade .25s}.sq b{display:block;margin:4px 0 6px;font-size:17px}
+.sq .sopt{display:block;width:100%;text-align:left;margin-top:8px}
+.rav{display:flex;align-items:center;gap:22px;margin:10px 0 4px}
+.rg{width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:40px}
+.rg.talk,.ring.talk{animation:talk 1s infinite}
+.rbtns{display:flex;gap:10px;align-items:center}.rbtns .btn{flex:1;margin:0}
 @media (prefers-reduced-motion:reduce){.fm-conf{display:none}.bub{animation:none}}
 </style>
 </head>
@@ -401,7 +419,7 @@ function save(){if(S.current&&S.profiles[S.current]){S.profiles[S.current].updat
 /* ---------- family sync (Firebase RTDB, branch famlingo) ---------- */
 const FB='https://familymath-4371e-default-rtdb.firebaseio.com/famlingo/v1';
 let pushT=null,SYNC={ok:null,at:0,pulling:false};
-function normProfile(p){p.done=p.done||{};p.mistakes=p.mistakes||[];p.calls=p.calls||[];p.legend=p.legend||{};p.roles=p.roles||{};p.days=p.days||[];p.quest=p.quest||{day:null,xp:0,lessons:0,calls:0,claimed:{}};p.quest.claimed=p.quest.claimed||{};p.week=p.week||{key:'',xp:0};p.theme=p.theme||(THEMES[p.id]?p.id:'teal');['xp','gems','streak','best','freezes'].forEach(k=>p[k]=p[k]||0);return p}
+function normProfile(p){p.done=p.done||{};p.mistakes=p.mistakes||[];p.calls=p.calls||[];p.legend=p.legend||{};p.roles=p.roles||{};p.days=p.days||[];p.quest=p.quest||{day:null,xp:0,lessons:0,calls:0,claimed:{}};p.quest.claimed=p.quest.claimed||{};p.week=p.week||{key:'',xp:0};p.stories=p.stories||{};p.radio=p.radio||{};p.theme=p.theme||(THEMES[p.id]?p.id:'teal');['xp','gems','streak','best','freezes'].forEach(k=>p[k]=p[k]||0);return p}
 function pushProfile(){const p=S.profiles[S.current];if(!p)return;clearTimeout(pushT);pushT=setTimeout(()=>{fetch(FB+'/profiles/'+encodeURIComponent(p.id)+'.json',{method:'PUT',body:JSON.stringify(p)}).then(r=>{SYNC.ok=r.ok;SYNC.at=Date.now()}).catch(()=>{SYNC.ok=false})},700)}
 async function pullFamily(){if(SYNC.pulling)return false;SYNC.pulling=true;let ch=false;
 try{const r=await fetch(FB+'/profiles.json',{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json()||{};
@@ -455,7 +473,7 @@ let VOICE=null;
 function pickVoice(){const vs=speechSynthesis.getVoices();VOICE=vs.find(v=>/en[-_]US/i.test(v.lang)&&/google/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}
 if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
 function hush(){try{speechSynthesis.cancel()}catch(e){}}
-function say(t,rate){return new Promise(res=>{if(!('speechSynthesis' in window))return res();try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';if(VOICE)u.voice=VOICE;u.rate=rate||S.rate;u.onend=res;u.onerror=res;speechSynthesis.speak(u)}catch(e){res()}})}
+function say(t,rate,pitch){return new Promise(res=>{if(!('speechSynthesis' in window))return res();try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';if(VOICE)u.voice=VOICE;u.rate=rate||S.rate;u.pitch=pitch||1;u.onend=res;u.onerror=res;speechSynthesis.speak(u)}catch(e){res()}})}
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let REC=null;
 function stopRec(){if(REC)try{REC.abort()}catch(e){}}
@@ -546,6 +564,8 @@ const nm=p.mistakes.length;
 h+=`<div class="fm-sec">Практика</div><div class="fm-rail">
 <button class="fm-sub fill" style="--sc:#F97316;--scd:#C2410C" onclick="startCall(-1)"><i>🦊</i>Разговор с Лекси</button>
 <button class="fm-sub fill" style="--sc:#F5B400;--scd:#C08900" onclick="renderRoles()"><i>🎭</i>Сценки</button>
+<button class="fm-sub fill" style="--sc:#14B8A6;--scd:#0D857A" onclick="renderMedia('story')"><i>📖</i>Истории</button>
+<button class="fm-sub fill" style="--sc:#334155;--scd:#1E293B" onclick="renderMedia('radio')"><i>📻</i>Радио</button>
 <button class="fm-sub fill" style="--sc:#2F6BFF;--scd:#1847C2" onclick="renderPractice()"><i>🏋️</i>Трени&shy;ровки</button>
 <button class="fm-sub fill" style="--sc:#E5484D;--scd:#BE123C" onclick="startMistakes()"><i>🩹</i>Ошибки${nm?' ('+nm+')':''}</button></div>`;
 h+=`<div class="fm-sec">Задания на сегодня</div><div class="card">${QUESTS.map(x=>{const v=Math.min(p.quest[x.k],x.g),full=v>=x.g,cl=p.quest.claimed[x.id];return `<div class="row qrow"><div style="font-size:30px">${x.ico}</div><div class="grow">${x.t}<div class="qbar"><i style="width:${100*v/x.g}%"></i></div><div class="small">${v} / ${x.g}</div></div><button class="chip acc" ${full&&!cl?'':'disabled'} onclick="claim('${x.id}')">${cl?'✓':'+10 💎'}</button></div>`}).join('')}
@@ -569,6 +589,223 @@ const QUESTS=[{id:'xp',t:'Набрать 30 XP',g:30,k:'xp',ico:'⚡'},{id:'les'
 function claimFQ(){const p=P(),wk=weekKey();if(p.fq===wk)return;p.fq=wk;p.gems+=30;save();SND.chest();confetti();toast('+30 💎 за семейный квест!');renderHome()}
 function claim(id){const p=P();if(p.quest.claimed[id])return;p.quest.claimed[id]=true;p.gems+=10;save();SND.chest();toast('+10 💎');renderHome()}
 function buyFreeze(){const p=P();if(p.gems<50||p.freezes>=2)return;p.gems-=50;p.freezes++;save();SND.ok();toast('🧊 Заморозка куплена');renderHome()}
+
+/* ===================== STORIES & RADIO ===================== */
+const CAST={lexi:['Лекси','🦊',1.2],anna:['Anna','👩',1.25],tom:['Tom','👨',0.8],max:['Max','🧔',0.9],kate:['Kate','👩‍🦰',1.15],chen:['Mr. Chen','🧑‍💼',0.95],n:['','📖',1]};
+const STORIES=[
+{id:'s1',u:0,ico:'🏡',title:'Новый сосед',items:[
+['n','Anna has a new neighbour.','У Анны новый сосед.'],
+['tom','Hi! I am Tom. I live next door.','Привет! Я Том. Я живу по соседству.'],
+['anna','Hello, Tom! I am Anna. Nice to meet you.','Привет, Том! Я Анна. Приятно познакомиться.'],
+['tom','Nice to meet you too. Are you from here?','Мне тоже. Вы местная?'],
+['anna','No, I am from Kazakhstan. I live here with my family.','Нет, я из Казахстана. Я живу здесь с семьёй.'],
+{q:'Откуда Анна?',o:['Из Казахстана','Из Англии','Из соседнего дома'],a:0},
+['tom','Cool! Do you have children?','Здорово! У вас есть дети?'],
+['anna','Yes, I have a son and a daughter.','Да, у меня сын и дочь.'],
+{f:'tom',en:'I have a ___ too. He is ten.',ru:'У меня тоже есть сын. Ему десять.',o:['son','car','cat'],a:0},
+['anna','Maybe they can play together!','Может, они будут играть вместе!'],
+['tom','Good idea. See you tomorrow!','Хорошая идея. До завтра!'],
+{q:'Что предлагает Анна?',o:['Чтобы дети играли вместе','Пойти в кафе','Позвонить завтра'],a:0},
+{q:'Сколько детей у Анны?',o:['Двое: сын и дочь','Один сын','Трое'],a:0}],
+m:[['neighbour','сосед'],['together','вместе'],['tomorrow','завтра'],['family','семья']]},
+{id:'s2',u:1,ico:'☕',title:'Кофе с собой',items:[
+['n','Max is in a café. He is very tired.','Макс в кафе. Он очень устал.'],
+['kate','Good morning! What can I get you?','Доброе утро! Что вам принести?'],
+['max','Good morning. Can I have a large coffee, please?','Доброе утро. Можно мне большой кофе?'],
+['kate','Of course. With milk?','Конечно. С молоком?'],
+['max','Yes, with milk, no sugar.','Да, с молоком, без сахара.'],
+{q:'Какой кофе заказал Макс?',o:['Большой, с молоком, без сахара','Маленький, с сахаром','Чёрный, без молока'],a:0},
+['kate','Anything else? Our chocolate cake is very good.','Что-нибудь ещё? У нас очень хороший шоколадный торт.'],
+{f:'max',en:'OK, one piece of ___, please.',ru:'Хорошо, кусочек торта, пожалуйста.',o:['cake','water','bill'],a:0},
+['kate','For here or to go?','Здесь или с собой?'],
+['max','To go, please. How much is it?','С собой. Сколько с меня?'],
+['kate','Seven dollars.','Семь долларов.'],
+['max','Here you are. Keep the change!','Вот, пожалуйста. Сдачи не надо!'],
+{q:'Что Макс сказал в конце?',o:['Сдачи не надо','Можно чек?','Где туалет?'],a:0}],
+m:[['tired','уставший'],['large','большой'],['piece','кусок'],['change','сдача']]},
+{id:'s3',u:2,ico:'🏨',title:'Проблема в отеле',items:[
+['n','Anna arrives at a hotel in London.','Анна приезжает в отель в Лондоне.'],
+['tom','Good evening! Welcome to the Park Hotel.','Добрый вечер! Добро пожаловать в Park Hotel.'],
+['anna','Hi. I have a reservation. My name is Anna.','Здравствуйте. У меня бронь. Меня зовут Анна.'],
+['tom','Yes, Anna. For three nights, room three hundred five.','Да, Анна. На три ночи, номер 305.'],
+{q:'На сколько ночей бронь?',o:['На три','На одну','На пять'],a:0},
+['n','Ten minutes later, Anna calls the reception.','Через десять минут Анна звонит на ресепшн.'],
+['anna','Hello, this is Anna. The shower does not work.','Здравствуйте, это Анна. Не работает душ.'],
+['tom','Oh, I am very sorry. We can give you a new room.','Ой, очень жаль. Мы можем дать вам другой номер.'],
+{f:'anna',en:'Thank you! Is ___ included?',ru:'Спасибо! А завтрак включён?',o:['breakfast','shower','taxi'],a:0},
+['tom','Yes, breakfast is from seven to ten.','Да, завтрак с семи до десяти.'],
+{q:'Какая проблема у Анны?',o:['Не работает душ','Нет брони','Шумный номер'],a:0},
+{q:'Когда завтрак?',o:['С семи до десяти','С восьми до девяти','Завтрака нет'],a:0}],
+m:[['reception','ресепшн'],['room','номер'],['sorry','жаль'],['included','включён']]},
+{id:'s4',u:3,ico:'🏭',title:'Звонок на завод',items:[
+['n','Max calls a factory in China.','Макс звонит на завод в Китае.'],
+['chen','Hello, Chen speaking.','Алло, Чен слушает.'],
+['max','Hello, Mr. Chen. This is Max from Almaty. I need a price for one thousand scanners.','Здравствуйте, это Макс из Алматы. Мне нужна цена на тысячу сканеров.'],
+['chen','One thousand? That is a big order. The price is two hundred dollars each.','Тысяча? Это большой заказ. Цена — двести долларов за штуку.'],
+{q:'Сколько сканеров нужно Максу?',o:['Тысяча','Сто','Двести'],a:0},
+['max','That is too high. Can you give us a discount?','Это дорого. Можете дать скидку?'],
+['chen','For a big order, yes. One hundred eighty dollars.','Для большого заказа — да. Сто восемьдесят долларов.'],
+{f:'max',en:'OK. Can you send a ___ first?',ru:'Хорошо. Можете сначала прислать образец?',o:['sample','discount','problem'],a:0},
+['chen','Of course. We will send it next week.','Конечно. Отправим на следующей неделе.'],
+['max','Great. Please send the invoice by email.','Отлично. Пришлите, пожалуйста, инвойс на почту.'],
+{q:'Какую цену дал Чен со скидкой?',o:['180 долларов','200 долларов','100 долларов'],a:0}],
+m:[['factory','завод'],['order','заказ'],['each','за штуку'],['invoice','инвойс']]},
+{id:'s5',u:4,ico:'🧣',title:'Подарок для мамы',items:[
+['n','Anna is looking for a gift for her mother.','Анна ищет подарок для мамы.'],
+['kate','Hello! Can I help you?','Здравствуйте! Вам помочь?'],
+['anna','Yes, please. I am looking for a scarf for my mother.','Да, пожалуйста. Я ищу шарф для мамы.'],
+['kate','We have red, blue and white scarves.','У нас есть красные, синие и белые шарфы.'],
+{q:'Что ищет Анна?',o:['Шарф для мамы','Платье для себя','Обувь для сына'],a:0},
+['anna','The blue one is nice. How much is it?','Синий красивый. Сколько стоит?'],
+['kate','Fifty dollars.','Пятьдесят долларов.'],
+{f:'anna',en:'Hmm, it is too ___. Do you have something cheaper?',ru:'Хм, слишком дорого. Есть что-то дешевле?',o:['expensive','small','blue'],a:0},
+['kate','This white scarf is thirty dollars. It is on sale.','Этот белый шарф — тридцать долларов. Он со скидкой.'],
+['anna','Perfect! I will take it. Can you wrap it? It is a gift.','Отлично! Беру. Можете упаковать? Это подарок.'],
+{q:'Почему Анна не взяла синий шарф?',o:['Слишком дорогой','Не тот цвет','Слишком маленький'],a:0}],
+m:[['scarf','шарф'],['gift','подарок'],['on sale','со скидкой'],['wrap','упаковать']]},
+{id:'s6',u:5,ico:'⏰',title:'Обычный вторник',items:[
+['n','Tom always gets up at six.','Том всегда встаёт в шесть.'],
+['tom','Good morning! Coffee?','Доброе утро! Кофе?'],
+['anna','Yes, please. Why are you up so early?','Да, пожалуйста. Почему ты так рано встал?'],
+['tom','I go to the gym before work. I go every Tuesday and Thursday.','Я хожу в спортзал перед работой. Каждый вторник и четверг.'],
+{q:'Когда Том ходит в спортзал?',o:['По вторникам и четвергам','Каждый день','По выходным'],a:0},
+['anna','I never go to the gym. I usually do yoga at home.','Я никогда не хожу в спортзал. Обычно я занимаюсь йогой дома.'],
+{f:'tom',en:'And what do you do in the ___?',ru:'А что ты делаешь вечером?',o:['evening','kitchen','car'],a:0},
+['anna','In the evening I help the children with homework.','Вечером я помогаю детям с уроками.'],
+['tom','And on Sunday we always go to the park.','А в воскресенье мы всегда ходим в парк.'],
+{q:'Чем Анна занимается вечером?',o:['Помогает детям с уроками','Ходит в спортзал','Смотрит кино'],a:0}],
+m:[['always','всегда'],['never','никогда'],['usually','обычно'],['early','рано']]},
+{id:'s7',u:6,ico:'🩺',title:'У врача',items:[
+['n','Max does not feel well.','Макс плохо себя чувствует.'],
+['kate','Hello, what is the problem?','Здравствуйте, на что жалуетесь?'],
+['max','I have a headache and a fever.','У меня болит голова и температура.'],
+['kate','Since when?','С какого времени?'],
+['max','Since yesterday. And my throat hurts.','Со вчерашнего дня. И горло болит.'],
+{q:'Что беспокоит Макса?',o:['Голова, горло и температура','Спина','Зуб'],a:0},
+['kate','It is a cold. You should rest and drink a lot of water.','Это простуда. Вам нужно отдыхать и пить много воды.'],
+{f:'max',en:'Do I need a ___?',ru:'Мне нужен рецепт?',o:['prescription','gym','ticket'],a:0},
+['kate','No. Take these tablets twice a day after food.','Нет. Принимайте эти таблетки два раза в день после еды.'],
+['max','Can I go to work tomorrow?','Можно мне завтра на работу?'],
+['kate','No, you should stay at home for two days.','Нет, вам стоит два дня побыть дома.'],
+{q:'Как часто принимать таблетки?',o:['Два раза в день после еды','Раз в день','Три раза до еды'],a:0}],
+m:[['throat','горло'],['rest','отдыхать'],['twice','дважды'],['stay','оставаться']]},
+{id:'s8',u:7,ico:'🏖️',title:'Отпуск в Турции',items:[
+['tom','Welcome back! How was your vacation?','С возвращением! Как отпуск?'],
+['anna','It was great! We went to Turkey.','Отлично! Мы ездили в Турцию.'],
+['tom','Lucky you! What did you do there?','Повезло! Что вы там делали?'],
+['anna','We swam in the sea every day and the children played on the beach.','Мы каждый день плавали в море, а дети играли на пляже.'],
+{q:'Куда ездила Анна?',o:['В Турцию','В Дубай','В горы'],a:0},
+['tom','Did you visit any old cities?','А старые города посещали?'],
+{f:'anna',en:'Yes, we ___ Istanbul for two days.',ru:'Да, мы два дня были в Стамбуле.',o:['visited','visit','visiting'],a:0},
+['anna','The food was delicious, but the hotel was very expensive.','Еда была очень вкусной, но отель — очень дорогим.'],
+['tom','Did you buy any gifts?','Подарки купили?'],
+['anna','Of course! I bought you some Turkish sweets.','Конечно! Я купила тебе турецких сладостей.'],
+{q:'Что было дорогим?',o:['Отель','Еда','Билеты'],a:0},
+{q:'Что Анна купила Тому?',o:['Турецкие сладости','Магнит','Ничего'],a:0}],
+m:[['vacation','отпуск'],['swam','плавали'],['delicious','вкусный'],['sweets','сладости']]},
+{id:'s9',u:8,ico:'🎂',title:'Планы на субботу',items:[
+['max','What are you doing on Saturday?','Что ты делаешь в субботу?'],
+['anna','Nothing special. Why?','Ничего особенного. А что?'],
+['max','It is my son\'s birthday. We are having a party at home.','У сына день рождения. Устраиваем праздник дома.'],
+{q:'Что будет в субботу?',o:['День рождения сына Макса','Концерт','Деловая встреча'],a:0},
+['anna','How nice! How old is he going to be?','Как здорово! Сколько ему исполнится?'],
+['max','Fourteen. Would you like to come?','Четырнадцать. Хочешь прийти?'],
+{f:'anna',en:'I would love to! What time does it ___?',ru:'С радостью! Во сколько начало?',o:['start','go','take'],a:0},
+['max','At four. My wife is going to make a big cake.','В четыре. Жена собирается испечь большой торт.'],
+['anna','Great. I will bring a gift.','Отлично. Я принесу подарок.'],
+{q:'Во сколько праздник?',o:['В четыре','В семь','В двенадцать'],a:0}],
+m:[['party','праздник'],['special','особенный'],['bring','принести'],['cake','торт']]},
+{id:'s10',u:9,ico:'📦',title:'Претензия поставщику',items:[
+['n','Max received the order from China. There is a problem.','Макс получил заказ из Китая. Есть проблема.'],
+['max','Good morning, Mr. Chen. I am afraid there is a problem with our order.','Доброе утро, господин Чен. Боюсь, с нашим заказом проблема.'],
+['chen','Oh no. What happened?','О нет. Что случилось?'],
+['max','Ten scanners arrived damaged, and five are missing.','Десять сканеров пришли повреждёнными, а пяти не хватает.'],
+{q:'Что не так с заказом?',o:['10 повреждены, 5 не хватает','Неправильная модель','Задержка доставки'],a:0},
+['chen','I am very sorry. Could you send us photos of the damaged boxes?','Очень жаль. Можете прислать фото повреждённых коробок?'],
+['max','Of course. I will send them today.','Конечно. Отправлю сегодня.'],
+{f:'chen',en:'We will send a ___ next week.',ru:'Мы отправим замену на следующей неделе.',o:['replacement','complaint','delay'],a:0},
+['max','Thank you. We also need a discount for the next order.','Спасибо. Ещё нам нужна скидка на следующий заказ.'],
+['chen','I think we can give you five percent.','Думаю, мы можем дать пять процентов.'],
+['max','Great. I look forward to your email.','Отлично. Жду вашего письма.'],
+{q:'Что Чен попросил прислать?',o:['Фото повреждённых коробок','Инвойс','Деньги'],a:0}],
+m:[['damaged','повреждённый'],['missing','не хватает'],['replacement','замена'],['percent','процент']]}
+];
+const RADIO=[
+{id:'r1',u:0,title:'Знакомьтесь: Том',guest:'tom',segs:[
+{l:[['lexi','Hello and welcome to Radio Lexi! Today our guest is Tom.'],['tom','Hi everyone! I am Tom. I am a teacher from London.']],q:'Кем работает Том?',o:['Учителем','Врачом','Водителем'],a:0},
+{l:[['lexi','Tom, do you have a family?'],['tom','Yes, I have a wife and two daughters.']],q:'Сколько у Тома дочерей?',o:['Две','Одна','Три'],a:0},
+{l:[['lexi','What do you do at the weekend?'],['tom','We usually go to the park or visit my parents.']],q:'Что Том обычно делает на выходных?',o:['Парк или в гости к родителям','Работает','Ходит в кино'],a:0}]},
+{id:'r2',u:2,title:'Путешествие без стресса',guest:'kate',segs:[
+{l:[['lexi','Our guest today is Kate. She travels a lot.'],['kate','Hi! Last year I visited twelve countries.']],q:'Сколько стран посетила Кейт?',o:['Двенадцать','Две','Двадцать'],a:0},
+{l:[['lexi','What is your top tip for the airport?'],['kate','Always arrive two hours before your flight, and keep your passport in your hand bag.']],q:'За сколько приезжать в аэропорт?',o:['За два часа','За час','За пять часов'],a:0},
+{l:[['lexi','And in the hotel?'],['kate','Ask if breakfast is included. It saves a lot of money.']],q:'Что советует спросить в отеле?',o:['Включён ли завтрак','Пароль от Wi-Fi','Где лифт'],a:0}]},
+{id:'r3',u:4,title:'Распродажа',guest:'anna',segs:[
+{l:[['lexi','Anna, you love shopping, right?'],['anna','Yes! But I only buy things on sale.']],q:'Что покупает Анна?',o:['Только со скидкой','Только дорогое','Только онлайн'],a:0},
+{l:[['lexi','What did you buy last week?'],['anna','A black jacket. It was eighty dollars, now it is forty.']],q:'Сколько стоила куртка со скидкой?',o:['40 долларов','80 долларов','14 долларов'],a:0},
+{l:[['lexi','Did it fit?'],['anna','No, it was too small! So I exchanged it for a bigger size.']],q:'Что сделала Анна?',o:['Обменяла на размер больше','Вернула деньги','Подарила'],a:0}]},
+{id:'r4',u:6,title:'Здоровое утро',guest:'max',segs:[
+{l:[['lexi','Our guest is Max, a fitness coach.'],['max','Hello! I get up at six and go running every morning.']],q:'Что Макс делает каждое утро?',o:['Бегает','Плавает','Спит до обеда'],a:0},
+{l:[['lexi','What should our listeners do?'],['max','Walk thirty minutes a day and drink more water.']],q:'Сколько ходить пешком в день?',o:['30 минут','3 часа','10 минут'],a:0},
+{l:[['lexi','And if my back hurts?'],['max','You should try swimming. It is very good for your back.']],q:'Что советуют при боли в спине?',o:['Плавание','Бег','Отжимания'],a:0}]},
+{id:'r5',u:8,title:'Большие планы',guest:'chen',segs:[
+{l:[['lexi','Mr. Chen, what are your plans for next year?'],['chen','We are going to open a new factory in Kazakhstan.']],q:'Что планирует Чен?',o:['Открыть завод в Казахстане','Уйти на пенсию','Продать компанию'],a:0},
+{l:[['lexi','When?'],['chen','In spring. We are meeting our partners in Almaty next month.']],q:'Когда встреча с партнёрами?',o:['В следующем месяце','Весной','Завтра'],a:0},
+{l:[['lexi','Will you learn Russian?'],['chen','Yes! I think I will start next week.']],q:'Что Чен начнёт на следующей неделе?',o:['Учить русский','Строить завод','Отпуск'],a:0}]}
+];
+function unitOpen(ui){const i=NODES.findIndex(n=>n.unit===ui);return i<=curIdx()||NODES.some(n=>n.unit===ui&&P().done[n.id])}
+function sayAs(who,t){const c=CAST[who]||CAST.n;return say(t,S.rate*0.95,c[2])}
+function renderMedia(kind){const p=P(),R=kind==='radio',list=R?RADIO:STORIES,done=R?p.radio:p.stories;
+show(R?'radios':'stories',`<div class="small" style="margin:0 2px 12px">${R?'Радио: только на слух, без текста. Ведущая Лекси и гость — после каждого фрагмента вопрос.':'Короткие истории с персонажами. Нажмите на реплику — увидите перевод и услышите её ещё раз.'}</div>`+
+list.map(x=>{const op=unitOpen(x.u),u=COURSE[x.u];return `<button class="rbtn" ${op?'':'style="opacity:.5"'} onclick="${op?(R?`startRadio('${x.id}')`:`startStory('${x.id}')`):`toast('Откроется в юните «${esc(u.title)}»')`}"><span class="ri">${op?(R?'📻':x.ico):'🔒'}</span><span class="grow"><b>${esc(x.title)}</b><span class="small">${u.icon} ${esc(u.title)}${R?' · '+x.segs.length+' фрагмента':''}</span></span><span class="rs">${done[x.id]?'✅':''}</span></button>`}).join(''),{title:R?'Радио Лекси':'Истории',sub:R?'Аудирование':'Чтение и понимание'})}
+/* --- story player --- */
+let ST=null;
+function startStory(id){const s=STORIES.find(x=>x.id===id);hush();ST={s,i:-1,wait:false,mist:0,start:Date.now()};
+show('story',`<div id="feed" class="feed"></div><div class="foot"><button class="btn" id="sbtn" onclick="storyNext()">Начать</button></div>`,{title:s.ico+' '+s.title,sub:'История',cnt:'0/'+s.items.length,prog:0});}
+function stProg(){const n=ST.s.items.length,k=Math.min(ST.i+1,n);const c=document.getElementById('fmcnt'),g=document.getElementById('fmprog');if(c)c.textContent=k+'/'+n;if(g)g.style.width=Math.round(100*k/n)+'%'}
+function stBtn(on,txt){const b=document.getElementById('sbtn');if(!b)return;b.disabled=!on;if(txt)b.textContent=txt}
+function feedAdd(h){const f=document.getElementById('feed');f.insertAdjacentHTML('beforeend',h);const el=f.lastElementChild;setTimeout(()=>el.scrollIntoView({block:'center',behavior:'smooth'}),30);return el}
+function lineHTML(who,en,ru,k){const c=CAST[who];if(who==='n')return `<div class="snar" onclick="tapLine(this,'${who}')" data-en="${esc(en)}">${esc(en)}<div class="sr">${esc(ru)}</div></div>`;
+return `<div class="sl" onclick="tapLine(this,'${who}')" data-en="${esc(en)}"><div class="sav">${c[1]}</div><div class="sb"><div class="sn">${esc(c[0])}</div><div class="se">${esc(en)}</div><div class="sr">${esc(ru)}</div></div></div>`}
+function tapLine(el,who){el.classList.toggle('open');sayAs(who,el.dataset.en)}
+function storyNext(){if(!ST||ST.wait)return;ST.i++;const it=ST.s.items[ST.i];stBtn(true,'Продолжить');
+if(!it)return storyMatch();stProg();
+if(Array.isArray(it)){feedAdd(lineHTML(it[0],it[1],it[2]));sayAs(it[0],it[1]);return}
+ST.wait=true;stBtn(false);
+if(it.q){feedAdd(`<div class="card sq"><div class="small">❓ Вопрос</div><b>${esc(it.q)}</b>${it.o.map((o,k)=>`<button class="tile sopt" onclick="stAns(this,${k})">${esc(o)}</button>`).join('')}</div>`);return}
+const c=CAST[it.f];feedAdd(`<div class="sl fill"><div class="sav">${c[1]}</div><div class="sb"><div class="sn">${esc(c[0])}</div><div class="se">${esc(it.en).replace('___','<span class="blank">_____</span>')}</div><div class="sopts">${it.o.map((o,k)=>`<button class="tile sopt" onclick="stAns(this,${k})">${esc(o)}</button>`).join('')}</div></div></div>`)}
+function stAns(b,k){const it=ST.s.items[ST.i];if(!ST.wait)return;
+if(k===it.a){b.classList.add('ok');SND.ok();ST.wait=false;b.parentNode.querySelectorAll('.sopt').forEach(x=>x.disabled=true);
+ if(it.f){const box=b.closest('.sl');box.querySelector('.blank').textContent=it.o[it.a];box.querySelector('.blank').classList.add('filled');box.insertAdjacentHTML('beforeend','');box.dataset.en=it.en.replace('___',it.o[it.a]);box.querySelector('.sb').insertAdjacentHTML('beforeend',`<div class="sr">${esc(it.ru)}</div>`);box.setAttribute('onclick',`tapLine(this,'${it.f}')`);setTimeout(()=>{box.querySelector('.sopts').remove();sayAs(it.f,box.dataset.en)},350)}
+ stBtn(true,'Продолжить')}
+else{ST.mist++;b.classList.add('bad');SND.bad();setTimeout(()=>b.classList.remove('bad'),450)}}
+function storyMatch(){const prs=ST.s.m,R=shuffle(prs.map((p,i)=>[p[1],i]));ST.wait=true;stBtn(false,'Продолжить');ST.left=prs.length;ST.msel=null;
+feedAdd(`<div class="card"><div class="small" style="margin-bottom:10px">🧩 Найдите пары из истории</div><div class="match"><div class="col">${prs.map((p,i)=>`<button class="tile m" data-s="en" data-k="${i}" onclick="stMatch(this)">${esc(p[0])}</button>`).join('')}</div><div class="col">${R.map(x=>`<button class="tile m" data-s="ru" data-k="${x[1]}" onclick="stMatch(this)">${esc(x[0])}</button>`).join('')}</div></div></div>`)}
+function stMatch(b){if(b.classList.contains('ok'))return;if(b.dataset.s==='en')say(b.textContent);
+if(!ST.msel||ST.msel.dataset.s===b.dataset.s){if(ST.msel)ST.msel.classList.remove('sel');ST.msel=b;b.classList.add('sel');SND.tap();return}
+const a=ST.msel;ST.msel=null;a.classList.remove('sel');
+if(a.dataset.k===b.dataset.k){[a,b].forEach(x=>{x.classList.add('ok');setTimeout(()=>x.classList.add('done'),350)});SND.pair();if(--ST.left===0){ST.wait=false;const sb=document.getElementById('sbtn');sb.disabled=false;sb.textContent='Завершить';sb.setAttribute('onclick','finishMedia()')}}
+else{ST.mist++;[a,b].forEach(x=>{x.classList.add('bad');setTimeout(()=>x.classList.remove('bad'),450)});SND.bad()}}
+function finishMedia(){const p=P(),R=ST.kind==='radio',id=ST.s.id,store=R?p.radio:p.stories,first=!store[id];store[id]=true;const xp=first?10:5;
+const nd=addXP(xp);ensureQuest();p.quest.lessons++;save();SND.win();confetti();const mist=ST.mist,title=ST.s.title;ST=null;
+show('end',`<div class="center">${fox(140)}<div class="big2">${R?'Выпуск дослушан!':'История пройдена!'}</div><div class="stats"><div class="stat" style="--c:#F5B400"><div class="h">ВСЕГО XP</div><div class="v">⚡${xp}</div></div><div class="stat" style="--c:var(--ok)"><div class="h">ОШИБКИ</div><div class="v">${mist}</div></div></div></div><div class="foot"><button class="btn" onclick="${nd?'streakScreen()':`renderMedia('${R?'radio':'story'}')`}">Продолжить</button></div>`,{title:R?'Радио Лекси':'Истории',sub:title})}
+/* --- radio player --- */
+let RTOK=0;
+function startRadio(id){const s=RADIO.find(x=>x.id===id);hush();ST={kind:'radio',s,seg:0,mist:0,wait:false,start:Date.now()};
+const g=CAST[s.guest];
+show('radio',`<div class="fm-today radio" style="--sc:#334155;--scd:#1E293B"><div class="lbl">📻 Радио Лекси · выпуск</div><div class="big" style="font-size:24px">${esc(s.title)}</div><div class="rav"><div class="ring" id="rl">${fox(64)}</div><div class="rg" id="rg">${g[1]}</div></div><div class="comp" id="rst">Нажмите «Слушать». Текста не будет — только на слух.</div><div class="rbtns"><button class="btn" id="rplay" onclick="playSeg()">▶ Слушать</button><button class="chip tch" onclick="toggleScript()">📝 Текст</button></div></div><div id="rscript" class="card" style="display:none"></div><div id="rq"></div>`,{title:'Радио Лекси',sub:s.title,cnt:'1/'+s.segs.length,prog:0})}
+async function playSeg(){if(!ST)return;const my=++RTOK,seg=ST.s.segs[ST.seg];const b=document.getElementById('rplay');b.disabled=true;document.getElementById('rq').innerHTML='';
+document.getElementById('rst').textContent='Слушайте внимательно…';
+for(const [who,t] of seg.l){if(my!==RTOK||VIEW!=='radio')return;const el=document.getElementById(who==='lexi'?'rl':'rg');if(el)el.classList.add('talk');await sayAs(who,t);if(el)el.classList.remove('talk');await new Promise(r=>setTimeout(r,250))}
+if(my!==RTOK||VIEW!=='radio')return;b.disabled=false;b.textContent='🔁 Ещё раз';document.getElementById('rst').textContent='Ответьте на вопрос:';ST.wait=true;
+document.getElementById('rq').innerHTML=`<div class="card sq"><b>${esc(seg.q)}</b>${seg.o.map((o,k)=>`<button class="tile sopt" onclick="rAns(this,${k})">${esc(o)}</button>`).join('')}</div>`;
+document.getElementById('rscript').innerHTML=seg.l.map(([w,t])=>`<div class="exr"><span style="font-size:22px">${CAST[w][1]}</span><div><b>${esc(CAST[w][0])}</b><div>${esc(t)}</div></div></div>`).join('')}
+function toggleScript(){const s=document.getElementById('rscript');if(!s.innerHTML)return toast('Сначала послушайте фрагмент');s.style.display=s.style.display==='none'?'block':'none'}
+function rAns(b,k){const seg=ST.s.segs[ST.seg];if(!ST.wait)return;
+if(k!==seg.a){ST.mist++;b.classList.add('bad');SND.bad();setTimeout(()=>b.classList.remove('bad'),450);return}
+b.classList.add('ok');SND.ok();ST.wait=false;b.parentNode.querySelectorAll('.sopt').forEach(x=>x.disabled=true);
+const last=ST.seg>=ST.s.segs.length-1;const c=document.getElementById('fmcnt'),g=document.getElementById('fmprog');if(g)g.style.width=Math.round(100*(ST.seg+1)/ST.s.segs.length)+'%';
+b.parentNode.insertAdjacentHTML('beforeend',`<button class="btn" style="margin-top:12px" onclick="${last?'finishMedia()':'nextSeg()'}">${last?'Завершить':'Следующий фрагмент'}</button>`)}
+function nextSeg(){ST.seg++;const c=document.getElementById('fmcnt');if(c)c.textContent=(ST.seg+1)+'/'+ST.s.segs.length;document.getElementById('rscript').innerHTML='';document.getElementById('rscript').style.display='none';const b=document.getElementById('rplay');b.textContent='▶ Слушать';playSeg()}
 
 /* ===================== REMINDERS (работают в APK: @capacitor/local-notifications) ===================== */
 const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
@@ -736,7 +973,7 @@ g.rules.map((r,k)=>`<div class="card"><div class="rnum" style="--c:${u.color}">$
 function learnedLessons(){const p=P();const ls=COURSE.flatMap(u=>u.lessons).filter(l=>p.done[l.id]);return ls.length?ls:[COURSE[0].lessons[0]]}
 function uniqWords(ls){const seenE=new Set(),seenR=new Set();return shuffle(ls.flatMap(l=>l.words)).filter(w=>{if(seenE.has(w[0])||seenR.has(w[1]))return false;seenE.add(w[0]);seenR.add(w[1]);return true})}
 function renderPractice(){const n=P().mistakes.length;
-const T=[["startPractice('speak')",'🗣️','Говорение','8 фраз вслух','#2F6BFF','#1847C2'],["startPractice('listen')",'🎧','Аудирование','8 фраз на слух','#8B5CF6','#6532D8'],["startPractice('words')",'🔤','Слова','Картинки и пары','#00A88F','#007F6C'],['startMistakes()','🩹','Ошибки',n?n+' фраз':'пока нет','#E5484D','#BE123C'],['startCall(-1)','🦊','Лекси','Разговор голосом','#F97316','#C2410C'],['renderRoles()','🎭','Сценки','Ролевые диалоги','#F5B400','#C08900']];
+const T=[["startPractice('speak')",'🗣️','Говорение','8 фраз вслух','#2F6BFF','#1847C2'],["startPractice('listen')",'🎧','Аудирование','8 фраз на слух','#8B5CF6','#6532D8'],["startPractice('words')",'🔤','Слова','Картинки и пары','#00A88F','#007F6C'],['startMistakes()','🩹','Ошибки',n?n+' фраз':'пока нет','#E5484D','#BE123C'],['startCall(-1)','🦊','Лекси','Разговор голосом','#F97316','#C2410C'],['renderRoles()','🎭','Сценки','Ролевые диалоги','#F5B400','#C08900'],["renderMedia('story')",'📖','Истории','Диалоги с вопросами','#14B8A6','#0D857A'],["renderMedia('radio')",'📻','Радио','Только на слух','#334155','#1E293B']];
 show('practice',`<div class="small" style="margin:0 2px 12px">Тренировки по пройденным урокам — без нового материала. +5 XP за каждую.</div><div class="pgrid">${T.map(t=>`<button class="ptile" style="--sc:${t[4]};--scd:${t[5]}" onclick="${t[0]}"><i>${t[1]}</i><b>${t[2]}</b><span>${t[3]}</span></button>`).join('')}</div>`,{title:'Практика',sub:'Тренировки'})}
 function startPractice(kind){const ls=learnedLessons();const ph=shuffle(ls.flatMap(l=>l.phrases.map(p=>[tx(p[0]),tx(p[1])])));const W=uniqWords(ls);const pool=ph.flatMap(p=>words(p[0]));let items=[];
 if(kind==='speak')items=ph.slice(0,8).map(p=>({type:'speak',text:p[0],ru:p[1]}));
