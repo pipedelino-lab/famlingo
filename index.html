@@ -517,7 +517,7 @@ function renderPick(){S.current=null;saveLocal();
 show('pick',`<div class="fm-brand">Fam<br>Lingo</div><p class="muted">Кто сегодня учится английскому?</p>`+
 Object.values(S.profiles).map(p=>{const t=TH(p.theme);return `<button class="fm-kid" style="--k:${t[0]};--kd:${t[1]}" onclick="pickProfile('${p.id}')"><div class="av">${p.avatar}</div><div><b>${esc(p.nameRu)}</b><span>⚡ ${p.xp} XP · 🔥 ${streakOf(p)} · уроков ${Object.keys(p.done).filter(k=>/l\d+$/.test(k)).length}</span></div></button>`}).join('')+
 `<button class="btn ghost" onclick="addProfile()">+ Добавить члена семьи</button>`)}
-function pickProfile(id){S.current=id;saveLocal();SELU=null;goHome()}
+function pickProfile(id){S.current=id;saveLocal();SELU=null;const p=P();if(!p.placed&&!p.xp&&!Object.keys(p.done).length)return renderLevel();goHome()}
 function addProfile(){modal(`<div class="mtitle">Новый профиль</div><input class="field" id="pn" placeholder="Имя по-русски (Чингиз)"><input class="field" id="pe" placeholder="Имя латиницей (Chingiz)"><button class="btn" onclick="mkProfile()">Создать</button>`,true)}
 function mkProfile(){const ru=document.getElementById('pn').value.trim(),en=document.getElementById('pe').value.trim();if(!ru||!en)return toast('Заполните оба поля');
 let theme='teal',av='🧑';if(/чингиз|chingiz/i.test(ru+en)){theme='chingiz';av='⚽'}else if(/тамин|tamina/i.test(ru+en)){theme='tamina';av='🌸'}else if(Object.keys(S.profiles).length%2)theme='orange';
@@ -570,6 +570,20 @@ function claimFQ(){const p=P(),wk=weekKey();if(p.fq===wk)return;p.fq=wk;p.gems+=
 function claim(id){const p=P();if(p.quest.claimed[id])return;p.quest.claimed[id]=true;p.gems+=10;save();SND.chest();toast('+10 💎');renderHome()}
 function buyFreeze(){const p=P();if(p.gems<50||p.freezes>=2)return;p.gems-=50;p.freezes++;save();SND.ok();toast('🧊 Заморозка куплена');renderHome()}
 
+/* ===================== PLACEMENT ===================== */
+function renderLevel(){const p=P();
+const O=[['🌱','С нуля','Начать с первого урока: приветствия, знакомство','placeStart(0)','#58CC02','#58A700'],['📗','Знаю основы','Тест с начала курса — подберём юнит. ~5 минут','startPlacement(0)','#1CB0F6','#1899D6'],['📘','Понимаю многое, говорю слабо','Тест с раздела 2 (A2) — пропустим лишнее','startPlacement(4)','#8B5CF6','#6532D8']];
+show('level',`<div class="center" style="padding-bottom:6px">${fox(110)}<div class="big2" style="margin:8px 0 6px">С чего начнём, ${esc(p.nameRu)}?</div><div class="small" style="margin-bottom:16px">Выберите, как хорошо вы знаете английский. Тест подберёт уровень, чтобы не учить то, что вы уже знаете.</div></div>`+
+O.map(o=>`<button class="fm-kid" style="--k:${o[4]};--kd:${o[5]}" onclick="${o[3]}"><div class="av">${o[0]}</div><div><b style="font-size:17px">${o[1]}</b><span>${o[2]}</span></div></button>`).join(''),{title:'Ваш уровень',sub:p.nameRu})}
+function placeStart(u){const p=P();p.placed=true;if(u>0)NODES.forEach(n=>{if(n.unit<u)p.done[n.id]=true});SELU=u;save();goHome()}
+function startPlacement(from){const items=[];for(let ui=from;ui<COURSE.length;ui++){const ls=shuffle(COURSE[ui].lessons);const pool=ls.flatMap(l=>l.phrases.flatMap(x=>words(tx(x[0]))));
+const a=shuffle(ls[0].phrases),b=shuffle(ls[1].phrases),c=ls[2]||ls[0];const W=c.words,ans=W[rnd(0,W.length-1)];
+items.push(Object.assign(mkBuild('build',tx(a[0][0]),tx(a[0][1]),pool),{u:ui}),Object.assign(mkBuild('listen',tx(b[0][0]),tx(b[0][1]),pool),{u:ui}),{type:'pic',prompt:ans[1],answer:ans[0],options:shuffle([ans].concat(shuffle(W.filter(w=>w!==ans)).slice(0,3))),u:ui})}
+L={node:null,mode:'place',from,items,idx:0,correct:0,total:items.length,combo:0,maxCombo:0,wrong:0,maxWrong:9999,uerr:{},start:Date.now(),title:'Тест уровня',sub:'Остановится, когда станет сложно'};lessonShell()}
+function finishPlacement(u){const p=P();L.finished=true;const all=u==null;if(all)u=COURSE.length-1;placeStartNoHome(u);SND.win();confetti();const x=COURSE[u];
+show('end',`<div class="center">${fox(130)}<div class="big2">${all?'Отличный уровень!':'Уровень определён!'}</div><div class="card" style="width:100%;text-align:left"><div class="small">Начинаем с</div><div class="uf" style="font-size:20px;margin:4px 0">${x.icon} ${esc(x.title)}</div><div class="small">Раздел ${u<5?'1 · A1':'2 · A2'} · юнит ${u+1} из ${COURSE.length}${u?'. Предыдущие юниты засчитаны — к ним можно вернуться в любой момент.':''}${all?' Весь курс пройден без ошибок — новые юниты уровня B1 будут добавлены.':''}</div></div></div><div class="foot"><button class="btn" onclick="goHome()">Начать учиться</button></div>`,{title:'Тест уровня',sub:p.nameRu})}
+function placeStartNoHome(u){const p=P();p.placed=true;NODES.forEach(n=>{if(n.unit<u)p.done[n.id]=true});SELU=u;addXP(10)}
+
 /* ===================== SETTINGS ===================== */
 function renderSettings(){const p=P();show('settings',`
 <div class="card"><div class="row"><div class="avatar">${p.avatar}</div><div class="grow"><b class="uf">${esc(p.nameRu)}</b><div class="small">Текущий профиль</div></div><button class="chip" onclick="renderPick()">Сменить</button></div></div>
@@ -578,6 +592,7 @@ function renderSettings(){const p=P();show('settings',`
 <div class="card">Скорость речи: <span id="rv">${S.rate}</span><input type="range" min="0.6" max="1.2" step="0.05" value="${S.rate}" style="width:100%;accent-color:var(--acc)" oninput="S.rate=+this.value;document.getElementById('rv').textContent=this.value;saveLocal()"><button class="chip" style="margin-top:8px" onclick="say('Hello! Nice to meet you.')">🔊 Проверить голос</button></div>
 <div class="card"><div class="row"><div class="grow">Звуки</div><button class="chip acc" onclick="S.sound=!S.sound;saveLocal();renderSettings()">${S.sound?'Вкл':'Выкл'}</button></div></div>
 <div class="card"><div class="row"><div class="grow">Распознавание речи<div class="small">${SR?'Доступно':'Недоступно — откройте в Chrome'}</div></div></div></div>
+<div class="card"><div class="row"><div class="grow">Тест уровня<div class="small">Подберёт юнит по вашим знаниям. Пройденные уроки не сотрутся.</div></div><button class="chip acc" onclick="startPlacement(0)">Пройти</button></div></div>
 <button class="link" style="color:var(--bad)" onclick="resetMe()">Сбросить прогресс профиля</button>`,{title:'Настройки',sub:p.nameRu})}
 function saveKey(){S.key=document.getElementById('key').value.trim();S.model=document.getElementById('model').value.trim()||'gemini-3.8-flash';saveLocal();SND.ok();toast('Сохранено')}
 function resetMe(){modal(`<div class="mtitle">Сбросить весь прогресс ${esc(P().nameRu)}?</div><button class="btn bad" onclick="const p=P();S.profiles[p.id]=newProfile(p.id,p.name,p.nameRu,p.avatar,p.theme);save();closeModal();renderSettings()">Сбросить</button><button class="link" onclick="closeModal()">Отмена</button>`,true)}
@@ -639,7 +654,7 @@ else{L.wrong++;L.combo=0;SND.bad();if(!r.soft||e.type==='speak')recordMistake(e)
 updateBar();setReady(false,false);
 document.getElementById('sheet').innerHTML=`<div class="sheet ${r.ok?'ok':'bad'}"><div class="s-head">${r.ok?'✔ '+PRAISE[rnd(0,PRAISE.length-1)]:'✖ Неправильно'}</div>${!r.ok&&r.answer?`<div class="s-lbl">Правильный ответ:</div><div class="s-ans">${esc(r.answer)}</div>`:r.ok&&e.type==='build'?`<div class="s-ans">${esc(e.answer)}</div>`:''}${!r.ok&&r.answer&&e.type!=='match'?'<div class="why" id="why"></div><button class="chip why-b" onclick="explain()">🤔 Почему так?</button>':''}${L.maxWrong!=null&&!r.ok?'<div class="s-lbl" style="margin-bottom:10px">Ошибок: '+L.wrong+' из '+L.maxWrong+' допустимых</div>':''}<button class="btn ${r.ok?'ok':'bad'}" onclick="nextEx()">Продолжить</button></div>`;
 if(!r.ok&&r.answer)say(r.answer)}
-function nextEx(){stopRec();if(L.maxWrong!=null&&L.wrong>L.maxWrong)return failTest();L.idx++;if(L.idx>=L.items.length)return finishLesson();renderEx()}
+function nextEx(){stopRec();if(L.mode==='place'){const e=L.items[L.idx];if(L.lastR&&!L.lastR.ok){L.uerr[e.u]=(L.uerr[e.u]||0)+1;if(L.uerr[e.u]>=2)return finishPlacement(e.u)}if(L.idx+1>=L.items.length)return finishPlacement(null)}if(L.maxWrong!=null&&L.wrong>L.maxWrong)return failTest();L.idx++;if(L.idx>=L.items.length)return finishLesson();renderEx()}
 function finishLesson(){const p=P();L.finished=true;const acc=Math.round(100*L.total/(L.total+L.wrong));const secs=Math.round((Date.now()-L.start)/1000);
 let xp={replay:5,practice:5,legend:40,jump:20}[L.mode]||10;if(L.mode==='new'&&L.wrong===0)xp+=5;const nd=addXP(xp);ensureQuest();
 if(L.node&&L.mode==='new')p.done[L.node.id]=true;if(L.mode==='legend')p.legend[COURSE[L.unit].id]=true;if(L.mode==='jump'){NODES.forEach(n=>{if(n.unit<L.unit)p.done[n.id]=true});SELU=L.unit}if(L.mode!=='mistakes')p.quest.lessons++;save();
