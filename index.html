@@ -212,7 +212,8 @@ const LS='famlingo_v1';
 function newProfile(id,name,nameRu,avatar){return {id,name,nameRu,avatar,xp:0,gems:50,streak:0,best:0,lastDay:null,freezes:1,done:{},mistakes:[],quest:{day:null,xp:0,lessons:0,calls:0,claimed:{}},calls:[]}}
 function load(){try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null}}
 function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
-let S=load()||{v:1,current:null,sound:true,rate:0.95,key:'',model:'gemini-2.5-flash',profiles:{adil:newProfile('adil','Adil','Адиль','🧔'),sagi:newProfile('sagi','Sagi','Саги','👩')}};
+let S=load()||{v:1,current:null,sound:true,rate:0.95,key:'',model:'gemini-3.8-flash',profiles:{adil:newProfile('adil','Adil','Адиль','🧔'),sagi:newProfile('sagi','Sagi','Саги','👩')}};
+if(S.model==='gemini-2.5-flash'){S.model='gemini-3.8-flash';save()}
 const P=()=>S.profiles[S.current];
 let TAB='learn';
 const app=document.getElementById('app');
@@ -297,7 +298,7 @@ function renderSettings(){const p=P();return `<h1 class="pt">Настройки<
 <div class="box"><div class="row"><div class="grow">Звуки</div><button class="chip" onclick="S.sound=!S.sound;save();render()">${S.sound?'Вкл':'Выкл'}</button></div></div>
 <div class="box"><div class="row"><div class="grow">Распознавание речи<div class="small">${SR?'Доступно':'Недоступно — откройте в Chrome'}</div></div></div></div>
 <button class="link" style="color:var(--red)" onclick="resetMe()">Сбросить прогресс профиля</button>`}
-function saveKey(){S.key=document.getElementById('key').value.trim();S.model=document.getElementById('model').value.trim()||'gemini-2.5-flash';save();SND.ok();toast('Сохранено')}
+function saveKey(){S.key=document.getElementById('key').value.trim();S.model=document.getElementById('model').value.trim()||'gemini-3.8-flash';save();SND.ok();toast('Сохранено')}
 function resetMe(){modal(`<div style="font-size:20px;font-weight:900;margin-bottom:16px">Сбросить весь прогресс ${esc(P().nameRu)}?</div><button class="btn red" onclick="const p=P();S.profiles[p.id]=newProfile(p.id,p.name,p.nameRu,p.avatar);save();closeModal();render()">Сбросить</button><button class="link" onclick="closeModal()">Отмена</button>`,true)}
 function renderPick(){app.innerHTML=`<div class="center">${fox(140)}<div style="font-size:26px;font-weight:900;margin-top:12px">Кто учится?</div><div class="pick">${Object.values(S.profiles).map(p=>`<button class="pbtn" onclick="S.current='${p.id}';save();TAB='learn';render()"><span class="avatar">${p.avatar}</span><span class="grow">${esc(p.nameRu)}<div class="small">⚡ ${p.xp} XP</div></span></button>`).join('')}<button class="link" onclick="addProfile()">+ Добавить профиль</button></div></div>`}
 function addProfile(){modal(`<div style="font-size:20px;font-weight:900">Новый профиль</div><input class="field" id="pn" placeholder="Имя по-русски (Чингиз)"><input class="field" id="pe" placeholder="Имя латиницей (Chingiz)"><button class="btn" onclick="mkProfile()">Создать</button>`,true)}
@@ -372,7 +373,7 @@ setTimeout(()=>{const p=P();p.done[n.id]=true;p.gems+=g;save();SND.chest();confe
 /* ===================== AI CALL ===================== */
 let C=null;
 async function gemini(system,history,maxTok){if(!S.key)throw new Error('nokey');
-const body={systemInstruction:{parts:[{text:system}]},contents:history.map(m=>({role:m.role,parts:[{text:m.text}]})),generationConfig:{temperature:.8,maxOutputTokens:maxTok||220}};
+const body={systemInstruction:{parts:[{text:system}]},contents:history.map(m=>({role:m.role,parts:[{text:m.text}]})),generationConfig:{temperature:.8,maxOutputTokens:Math.max(maxTok||0,1024)}};
 if(/2\.5-flash/.test(S.model))body.generationConfig.thinkingConfig={thinkingBudget:0};
 const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(S.model)+':generateContent?key='+encodeURIComponent(S.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error((j.error&&j.error.message)||('HTTP '+r.status));
