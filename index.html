@@ -116,6 +116,16 @@ h1,h2,.uf{font-family:Unbounded,Nunito,system-ui,sans-serif;font-weight:800;lett
 .kbtn{background:#fff;border:2px solid var(--line);box-shadow:0 4px 0 var(--line);border-radius:12px;font-size:20px;padding:6px 10px;margin-left:auto}
 .kbtn.on{border-color:var(--acc);background:var(--tint)}
 .kbin{width:100%;min-height:120px;border:2px solid var(--line);border-radius:16px;padding:12px;font:inherit;font-size:18px;font-weight:700;background:#fff;color:var(--ink);resize:none;margin-bottom:20px;box-sizing:border-box}
+.btn,.fm-kid,.ptile,.spk,.fm-back,.fm-sub.fill,.node,.fm-sub.on{background-image:linear-gradient(180deg,rgba(255,255,255,.17),rgba(255,255,255,0) 46%),radial-gradient(130% 150% at 50% 30%,rgba(0,0,0,0) 58%,rgba(0,0,0,.13) 100%)}
+.tile,.chip,.rbtn,.pic,.fm-sub,.fm-ico,.kbtn,.btn.ghost{background-image:radial-gradient(130% 160% at 50% 25%,rgba(0,0,0,0) 62%,rgba(0,0,0,.055) 100%)}
+.btn:disabled{background-image:none}
+.av-ring{position:relative;width:76px;height:76px;flex:none}.av-ring svg{position:absolute;inset:0}.av-ring .avatar{position:absolute;left:6px;top:6px}
+.wod{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:22px;box-shadow:0 5px 0 var(--line);padding:14px 16px;margin:0 0 16px;color:var(--ink)}
+.wod .e{font-size:40px;line-height:1}.wod b{display:block;font:800 19px/1.15 Unbounded,Nunito,sans-serif}.wod .t{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.wk{background:linear-gradient(135deg,#1E1B4B,#4338CA);color:#fff;border-radius:24px;padding:18px;margin:0 0 16px;box-shadow:0 6px 0 #14123A}
+.wk h3{margin:0 0 10px;font:800 18px/1.2 Unbounded,Nunito,sans-serif}.wk .g{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wk .g div{background:rgba(255,255,255,.12);border-radius:14px;padding:10px}.wk .g b{display:block;font:800 22px/1.1 Unbounded,Nunito,sans-serif}.wk .g span{font-size:13px;opacity:.85}
+.fam-st{display:inline-block;margin-top:6px;background:rgba(255,255,255,.22);border-radius:10px;padding:3px 8px;font-size:13px;font-weight:800}
+.goalc{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.goalc .chip{white-space:normal;text-align:center}.goalc .chip.on{border-color:var(--acc);background-color:var(--tint);color:var(--acc)}
 .ex-top{display:flex;align-items:center;gap:8px}.ex-top .ex-title{margin-right:auto}
 .say-row{display:flex;align-items:flex-end;gap:8px;margin-bottom:22px}
 .bubble{position:relative;background:#fff;border:2px solid var(--line);box-shadow:0 4px 0 var(--line);border-radius:20px;padding:12px 14px;font-size:18px;flex:1}
@@ -731,7 +741,7 @@ function save(){if(S.current&&S.profiles[S.current]){S.profiles[S.current].updat
 /* ---------- family sync (Firebase RTDB, branch famlingo) ---------- */
 const FB='https://familymath-4371e-default-rtdb.firebaseio.com/famlingo/v1';
 let pushT=null,SYNC={ok:null,at:0,pulling:false};
-function normProfile(p){p.done=p.done||{};p.mistakes=p.mistakes||[];p.calls=p.calls||[];p.legend=p.legend||{};p.roles=p.roles||{};p.days=p.days||[];p.quest=p.quest||{day:null,xp:0,lessons:0,calls:0,claimed:{}};p.quest.claimed=p.quest.claimed||{};p.week=p.week||{key:'',xp:0};p.stories=p.stories||{};p.mem=p.mem||{};p.radio=p.radio||{};p.theme=p.theme||(THEMES[p.id]?p.id:'teal');['xp','gems','streak','best','freezes'].forEach(k=>p[k]=p[k]||0);return p}
+function normProfile(p){p.done=p.done||{};p.mistakes=p.mistakes||[];p.calls=p.calls||[];p.legend=p.legend||{};p.roles=p.roles||{};p.days=p.days||[];p.quest=p.quest||{day:null,xp:0,lessons:0,calls:0,claimed:{}};p.quest.claimed=p.quest.claimed||{};p.week=p.week||{key:'',xp:0};p.stories=p.stories||{};p.mem=p.mem||{};p.radio=p.radio||{};p.dxp=p.dxp||{};p.goal=p.goal||(p.track==='kids'?10:20);p.theme=p.theme||(THEMES[p.id]?p.id:'teal');['xp','gems','streak','best','freezes'].forEach(k=>p[k]=p[k]||0);return p}
 function pushProfile(){const p=S.profiles[S.current];if(!p)return;clearTimeout(pushT);pushT=setTimeout(()=>{fetch(FB+'/profiles/'+encodeURIComponent(p.id)+'.json',{method:'PUT',body:JSON.stringify(p)}).then(r=>{SYNC.ok=r.ok;SYNC.at=Date.now()}).catch(()=>{SYNC.ok=false})},700)}
 async function pullFamily(){if(SYNC.pulling)return false;SYNC.pulling=true;let ch=false;
 try{const r=await fetch(FB+'/profiles.json',{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json()||{};
@@ -785,7 +795,9 @@ if(h<1&&cap)document.documentElement.style.setProperty('--sat','36px')}catch(e){
 /* ===================== SOUND & SPEECH ===================== */
 let AC=null;
 function tone(fr,dur,type,gap,vol){if(!S.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const t0=AC.currentTime;fr.forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;const st=t0+i*gap;g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(vol,st+.01);g.gain.exponentialRampToValueAtTime(.001,st+dur);o.connect(g);g.connect(AC.destination);o.start(st);o.stop(st+dur+.03)})}catch(e){}}
-const SND={ok:()=>tone([660,990],.2,'sine',.1,.2),bad:()=>tone([200,160],.28,'square',.13,.07),tap:()=>tone([520],.06,'sine',0,.07),pair:()=>tone([700],.12,'sine',0,.15),win:()=>tone([523,659,784,1047],.3,'triangle',.13,.2),chest:()=>tone([392,523,659,784,1047,1319],.22,'triangle',.08,.18),combo:()=>tone([784,988,1175],.15,'triangle',.07,.15)};
+function buzz(pt){if(!S.sound)return;try{if(navigator.vibrate)navigator.vibrate(pt)}catch(e){}}
+const SND={ok:()=>{tone([660,990],.2,'sine',.1,.2);buzz([18,60,18])},bad:()=>{tone([200,160],.28,'square',.13,.07);buzz(120)},tap:()=>{tone([520],.06,'sine',0,.07);buzz(8)},click:()=>{tone([440],.035,'sine',0,.045);buzz(7)},pair:()=>{tone([700],.12,'sine',0,.15);buzz(12)},win:()=>{tone([523,659,784,1047],.3,'triangle',.13,.2);buzz([30,70,30,70,70])},chest:()=>{tone([392,523,659,784,1047,1319],.22,'triangle',.08,.18);buzz([25,50,25,50,25,50,80])},combo:()=>{tone([784,988,1175],.15,'triangle',.07,.15);buzz([12,40,12,40,12])}};
+document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('button');if(!b||b.disabled||b.id==='chk'||b.classList.contains('tile')||b.closest('#ans'))return;SND.click()},true);
 let VOICE=null;
 function pickVoice(){const vs=speechSynthesis.getVoices();VOICE=vs.find(v=>/en[-_]US/i.test(v.lang)&&/google/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}
 if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
@@ -811,7 +823,7 @@ return new Promise((res,rej)=>{if(!SR)return rej('nosr');const r=new SR();REC=r;
 function ensureQuest(){const p=P(),t=today();if(p.quest.day!==t)p.quest={day:t,xp:0,lessons:0,calls:0,claimed:{}}}
 function streakOf(p){if(!p.lastDay)return 0;const d=dayDiff(p.lastDay,today());if(d<=1)return p.streak;if(d===2&&p.freezes>0)return p.streak;return 0}
 function touchDay(){const p=P(),t=today();if(p.lastDay===t)return false;const d=p.lastDay?dayDiff(p.lastDay,t):99;if(d===1)p.streak++;else if(d===2&&p.freezes>0){p.freezes--;p.streak++}else p.streak=1;p.best=Math.max(p.best,p.streak);p.lastDay=t;p.days=(p.days||[]).concat(t).slice(-400);return true}
-function addXP(n){ensureQuest();const nd=touchDay();const p=P();p.xp+=n;p.quest.xp+=n;const wk=weekKey();if(!p.week||p.week.key!==wk)p.week={key:wk,xp:0};p.week.xp+=n;save();scheduleReminders();return nd}
+function addXP(n){ensureQuest();const nd=touchDay();const p=P();const before=p.quest.xp;p.xp+=n;p.quest.xp+=n;const t0=today();p.dxp=p.dxp||{};p.dxp[t0]=(p.dxp[t0]||0)+n;Object.keys(p.dxp).forEach(k=>{if(dayDiff(k,t0)>21)delete p.dxp[k]});const gl=p.goal||20;if(before<gl&&p.quest.xp>=gl)setTimeout(()=>{SND.combo();toast('🎯 Дневная цель выполнена! '+p.quest.xp+' / '+gl+' XP')},1400);const wk=weekKey();if(!p.week||p.week.key!==wk)p.week={key:wk,xp:0};p.week.xp+=n;save();scheduleReminders();return nd}
 function advU(n){const p=P();if(n&&NODES.filter(x=>x.unit===n.unit).every(x=>p.done[x.id]))SELU=null}
 function curIdx(){const p=P();const i=NODES.findIndex(n=>!p.done[n.id]);return i<0?NODES.length:i}
 function recordMistake(e){const en=e.answer||e.text,ru=e.ru||e.prompt;if(!en||!ru)return;const p=P();if(!p.mistakes.some(m=>m[0]===en)){p.mistakes.push([en,ru]);if(p.mistakes.length>30)p.mistakes.shift()}}
@@ -861,9 +873,10 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)bgPull()})
 
 /* ===================== PROFILES ===================== */
 function renderPick(){S.current=null;saveLocal();
-show('pick',`<div class="fm-brand">Fam<br>Lingo</div><p class="muted">Кто сегодня учится английскому?</p>`+
-Object.values(S.profiles).map(p=>{const t=TH(p.theme);return `<button class="fm-kid" style="--k:${t[0]};--kd:${t[1]}" onclick="pickProfile('${p.id}')"><div class="av">${p.avatar}</div><div><b>${esc(p.nameRu)}</b><span>⚡ ${p.xp} XP · 🔥 ${streakOf(p)} · уроков ${Object.keys(p.done).filter(k=>/l\d+$/.test(k)).length}</span></div></button>`}).join('')+
-`<button class="btn ghost" onclick="addProfile()">+ Добавить члена семьи</button>`)}
+const fm=Object.values(S.profiles),dn=fm.filter(q=>q.lastDay===today()).length;
+show('pick',`<div class="fm-brand">Fam<br>Lingo</div><p class="muted">Кто сегодня учится английскому?<br><b>Сегодня занимались: ${dn} из ${fm.length}</b>${dn===fm.length&&fm.length?' 🎉':''}</p>`+
+Object.values(S.profiles).map(p=>{const t=TH(p.theme);return `<button class="fm-kid" style="--k:${t[0]};--kd:${t[1]}" onclick="pickProfile('${p.id}')"><div class="av">${p.avatar}</div><div><b>${esc(p.nameRu)}</b><span>⚡ ${p.xp} XP · 🔥 ${streakOf(p)} · уроков ${Object.keys(p.done).filter(k=>/l\d+$/.test(k)).length}</span><span class="fam-st">${p.lastDay===today()?'✅ Сегодня: '+((p.quest&&p.quest.day===today())?p.quest.xp:0)+' XP':'⏳ Сегодня ещё нет'}</span></div></button>`}).join('')+
+`<button class="btn ghost" onclick="addProfile()">+ Добавить члена семьи</button>`);setTimeout(()=>bgPull(),0)}
 function pickProfile(id){S.current=id;saveLocal();SELU=null;const p=P();setTrack(p.track);if(TRACK==='kids'&&!p.placed){p.placed=true;save()}if(!p.placed&&!p.xp&&!Object.keys(p.done).length)return renderLevel();goHome()}
 function addProfile(){modal(`<div class="mtitle">Новый профиль</div><input class="field" id="pn" placeholder="Имя по-русски (Чингиз)"><input class="field" id="pe" placeholder="Имя латиницей (Chingiz)"><button class="btn" onclick="mkProfile()">Создать</button>`,true)}
 function mkProfile(){const ru=document.getElementById('pn').value.trim(),en=document.getElementById('pe').value.trim();if(!ru||!en)return toast('Заполните оба поля');
@@ -874,6 +887,20 @@ const id=THEMES[theme]&&(theme==='chingiz'||theme==='tamina')&&!S.profiles[theme
 const secLabel=u=>TRACK==='kids'?(u<5?'1 · A1':'2 · A2'):(u<5?'1 · A1':u<10?'2 · A2':'3 · B1');
 const OFF=[0,46,72,46,0,-46,-72,-46];
 function nodeLabel(n){return n.type==='lesson'?'Урок «'+n.lesson.title+'» · '+(TRACK==='kids'?10:12)+' заданий · +10 XP':n.type==='chest'?'Сундук с кристаллами 🎁':'Звонок Лекси 📞 · 2–3 минуты · +15 XP'}
+function goalRing(p){const g=p.goal||20,v=Math.min(p.quest.xp||0,g),r=35,c=2*Math.PI*r,f=v/g,t=TH(p.theme);
+return `<div class="av-ring" title="Дневная цель"><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="${r}" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="38" cy="38" r="${r}" fill="none" stroke="${f>=1?'#58CC02':t[0]}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(c*f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 38 38)"/></svg><div class="avatar">${f>=1?'🎯':p.avatar}</div></div>`}
+function hashS(s){let h=5381;for(const ch of String(s))h=((h<<5)+h+ch.charCodeAt(0))|0;return Math.abs(h)}
+function wodCard(p){const ci=curIdx();const n=NODES[Math.min(ci,NODES.length-1)];if(!n)return '';
+let pool=[];const u=COURSE[n.unit];if(n.lesson)pool=n.lesson.words.slice();if(!pool.length)pool=u.lessons.flatMap(l=>l.words);if(!pool.length)return '';
+const w=pool[hashS(today()+p.id)%pool.length];
+return `<button class="wod" onclick="say(${esc(JSON.stringify(w[0]))})"><div class="e">${w[2]||'⭐'}</div><div class="grow"><div class="t">Слово дня</div><b>${esc(w[0])}</b><div class="small">${esc(w[1])}</div></div><div style="font-size:26px">🔊</div></button>`}
+function weekCard(p){const d=new Date();if(d.getDay()!==0)return '';const wk=weekKey();const mon=new Date(wk+'T00:00:00');
+const days=[];for(let i=0;i<7;i++){const x=new Date(mon);x.setDate(mon.getDate()+i);days.push(x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'))}
+const dx=p.dxp||{};const xp=weekXp(p);const act=days.filter(k=>(p.days||[]).includes(k)).length;
+let best=null;days.forEach(k=>{if((dx[k]||0)>0&&(!best||dx[k]>dx[best]))best=k});
+const nw=Object.values(p.mem||{}).filter(m=>m.c&&m.c>=mon.getTime()).length;
+const bn=best?new Date(best+'T12:00:00').toLocaleDateString('ru-RU',{weekday:'long'}):'—';
+return `<div class="wk"><h3>📊 Итог недели</h3><div class="g"><div><b>${xp}</b><span>XP за неделю</span></div><div><b>${act} / 7</b><span>дней с занятиями</span></div><div><b>${nw}</b><span>новых слов и фраз</span></div><div><b style="font-size:17px">${bn}</b><span>лучший день${best?' · '+dx[best]+' XP':''}</span></div></div></div>`}
 function renderHome(){ensureQuest();const p=P(),ci=curIdx();
 if(SELU==null)SELU=ci<NODES.length?NODES[ci].unit:COURSE.length-1;
 const u=COURSE[SELU];const un=NODES.map((n,i)=>[n,i]).filter(x=>x[0].unit===SELU);const doneN=un.filter(x=>p.done[x[0].id]).length;
@@ -883,9 +910,10 @@ if(!unlocked){comp='Юнит пока закрыт. Уже знаете мате
 else if(next){comp='Дальше: '+nodeLabel(next[0]);cta=doneN?'Продолжить':'Начать';act=`startNode(${next[1]})`}
 else if(!p.legend[u.id]){comp='Юнит пройден! Сделайте его легендарным: тест почти без права на ошибку · +40 XP';cta='👑 Легендарный уровень';act=`startTest('legend',${SELU})`}else{comp='👑 Юнит легендарный! Повторяйте уроки для закрепления · +5 XP';cta='Повторить';act=`replayUnit(${SELU})`}
 const st=streakOf(p);
-let h=`<div class="fm-hero"><div class="avatar">${p.avatar}</div><div><h1>Привет, ${esc(p.nameRu)}!</h1><div class="fm-pills"><span class="fm-pill">🔥 ${st} ${plural(st,'день','дня','дней')} подряд</span><span class="fm-pill">⚡ ${p.xp} XP</span><span class="fm-pill">💎 ${p.gems}</span></div></div></div>`;
+let h=`<div class="fm-hero">${goalRing(p)}<div><h1>Привет, ${esc(p.nameRu)}!</h1><div class="fm-pills"><span class="fm-pill">🎯 ${Math.min(p.quest.xp,p.goal||20)}/${p.goal||20} XP</span><span class="fm-pill">🔥 ${st}</span><span class="fm-pill">💎 ${p.gems}</span></div></div></div>`;
 h+=`<div class="fm-rail">${COURSE.map((x,i)=>`<button class="fm-sub${i===SELU?' on':''}" style="--sc:${x.color};--scd:${x.dark}" onclick="SELU=${i};renderHome()"><i>${x.icon}</i>${esc(x.title).replace('Путешествие','Путе\u00ADшествие')}${p.legend[x.id]?' 👑':''}</button>`).join('')}</div>`;
 h+=`<div class="fm-today" style="--sc:${u.color};--scd:${u.dark}"><div class="fox">${fox(64)}</div><div class="lbl">${u.icon} ${esc(u.title)}<div style="font-size:13px;opacity:.85;margin-top:2px">Раздел ${secLabel(SELU)} · юнит ${SELU+1} из ${COURSE.length}</div></div><div class="big">${doneN}<small> / ${un.length}</small></div><div class="bar"><i style="width:${Math.round(100*doneN/un.length)}%"></i></div><div class="comp">${esc(comp)}</div><button class="btn" ${dis?'disabled':''} onclick="${act}">${cta}</button><div class="tch-row"><button class="chip tch" onclick="renderGuide(${SELU})">📖 Правила юнита</button>${!next&&unlocked&&!p.legend[u.id]?`<button class="chip tch" onclick="replayUnit(${SELU})">🔁 Повторить урок</button>`:''}</div></div>`;
+h+=wodCard(p)+weekCard(p);
 h+=`<div class="fm-sec">Путь юнита</div><div class="card"><div class="nodes" style="--c:${p.legend[u.id]?'#F5B400':u.color};--cd:${p.legend[u.id]?'#C08900':u.dark}">`;
 un.forEach(([n,i],k)=>{const done=!!p.done[n.id],cur=i===ci,locked=!done&&!cur;const ico=n.type==='chest'?'🎁':n.type==='call'?'📞':done?'✓':'★';
 h+=`<div class="nw${cur?' cur':''}" style="--x:${OFF[k%8]}px">${cur?`<div class="bub">${n.type==='call'?'ПОЗВОНИТЬ':n.type==='chest'?'ОТКРЫТЬ':'НАЧАТЬ'}</div>`:''}<button class="node${locked?' locked':''}" onclick="tapNode(${i})">${ico}</button></div>`});
@@ -1329,7 +1357,8 @@ function renderSettings(){const p=P();show('settings',`
 <div style="margin-top:12px">Модель<input class="field" id="model" value="${esc(S.model)}"></div><button class="btn" style="margin-top:8px" onclick="saveKey()">Сохранить</button></div>
 <div class="card">Скорость речи: <span id="rv">${S.rate}</span><input type="range" min="0.6" max="1.2" step="0.05" value="${S.rate}" style="width:100%;accent-color:var(--acc)" oninput="S.rate=+this.value;document.getElementById('rv').textContent=this.value;saveLocal()"><button class="chip" style="margin-top:8px" onclick="say('Hello! Nice to meet you.')">🔊 Проверить голос</button></div>
 <div class="card"><div class="row"><div class="grow">Напоминания<div class="small">${LN()?'Каждый день, если урока ещё не было, + «серия сгорит» в 22:30':'Заработают в APK-версии приложения'}</div></div><button class="chip acc" onclick="S.remind=S.remind===false;saveLocal();scheduleReminders();renderSettings()">${S.remind===false?'Выкл':'Вкл'}</button></div><div class="row" style="margin-top:8px"><div class="grow small">Время напоминания</div><input class="field" type="time" style="width:130px;margin:0" value="${S.remindAt||'20:00'}" onchange="S.remindAt=this.value;saveLocal();scheduleReminders()"></div></div>
-<div class="card"><div class="row"><div class="grow">Звуки</div><button class="chip acc" onclick="S.sound=!S.sound;saveLocal();renderSettings()">${S.sound?'Вкл':'Выкл'}</button></div></div>
+<div class="card">Дневная цель<div class="small">Сколько XP набирать каждый день. Один урок ≈ 10–15 XP.</div><div class="goalc">${[[10,'🙂 Лёгкий'],[20,'👍 Обычный'],[30,'💪 Серьёзный'],[50,'🔥 Интенсив']].map(g=>`<button class="chip${(p.goal||20)===g[0]?' on':''}" onclick="P().goal=${g[0]};save();renderSettings()">${g[1]}<br>${g[0]} XP</button>`).join('')}</div></div>
+<div class="card"><div class="row"><div class="grow">Звук и вибрация<div class="small">Щелчки кнопок, сигналы ответов, вибрация в приложении</div></div><button class="chip acc" onclick="S.sound=!S.sound;saveLocal();renderSettings()">${S.sound?'Вкл':'Выкл'}</button></div></div>
 <div class="card"><div class="row"><div class="grow">Распознавание речи<div class="small">${SR?'Доступно':'Недоступно — откройте в Chrome'}</div></div></div></div>
 ${TRACK==="kids"?"":`<div class="card"><div class="row"><div class="grow">Уровень<div class="small">Начать с A2 или пройти тест уровня. Пройденные уроки не сотрутся.</div></div><button class="chip acc" onclick="renderLevel()">Сменить</button></div></div>`}
 <button class="link" style="color:var(--bad)" onclick="resetMe()">Сбросить прогресс профиля</button>`,{title:'Настройки',sub:p.nameRu})}
@@ -1342,7 +1371,7 @@ function hk(s){let h=5381;for(const c of String(s))h=((h<<5)+h+c.charCodeAt(0))|
 function memItem(e){if(e.type==='pic'){const o=e.options.find(o=>o[0]===e.answer)||[];return {en:e.answer,ru:e.prompt,em:o[2]||'⭐',w:1}}
 if(e.type==='build'||e.type==='listen')return {en:e.answer,ru:e.ru||e.prompt};if(e.type==='speak')return {en:e.text,ru:e.ru};return null}
 function memUpdate(e,ok){const m=memItem(e);if(!m||!m.en||!m.ru)return;const p=P();p.mem=p.mem||{};const k=hk(m.en),now=Date.now();
-const x=p.mem[k]||{en:m.en,ru:m.ru,em:m.em||'',w:m.w?1:0,s:0,due:0,n:0,x:0};x.n++;L.failed=L.failed||{};
+const x=p.mem[k]||{en:m.en,ru:m.ru,em:m.em||'',w:m.w?1:0,s:0,due:0,n:0,x:0,c:now};x.n++;L.failed=L.failed||{};
 if(ok){if(L.failed[k])x.due=now+DAY;else{x.s=Math.min(x.s+1,IVL.length-1);x.due=now+IVL[x.s]*DAY}}
 else{L.failed[k]=1;x.x++;x.s=Math.max(0,x.s-2);x.due=now+10*60000}
 p.mem[k]=x}
