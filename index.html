@@ -801,6 +801,7 @@ function ensureQuest(){const p=P(),t=today();if(p.quest.day!==t)p.quest={day:t,x
 function streakOf(p){if(!p.lastDay)return 0;const d=dayDiff(p.lastDay,today());if(d<=1)return p.streak;if(d===2&&p.freezes>0)return p.streak;return 0}
 function touchDay(){const p=P(),t=today();if(p.lastDay===t)return false;const d=p.lastDay?dayDiff(p.lastDay,t):99;if(d===1)p.streak++;else if(d===2&&p.freezes>0){p.freezes--;p.streak++}else p.streak=1;p.best=Math.max(p.best,p.streak);p.lastDay=t;p.days=(p.days||[]).concat(t).slice(-400);return true}
 function addXP(n){ensureQuest();const nd=touchDay();const p=P();p.xp+=n;p.quest.xp+=n;const wk=weekKey();if(!p.week||p.week.key!==wk)p.week={key:wk,xp:0};p.week.xp+=n;save();scheduleReminders();return nd}
+function advU(n){const p=P();if(n&&NODES.filter(x=>x.unit===n.unit).every(x=>p.done[x.id]))SELU=null}
 function curIdx(){const p=P();const i=NODES.findIndex(n=>!p.done[n.id]);return i<0?NODES.length:i}
 function recordMistake(e){const en=e.answer||e.text,ru=e.ru||e.prompt;if(!en||!ru)return;const p=P();if(!p.mistakes.some(m=>m[0]===en)){p.mistakes.push([en,ru]);if(p.mistakes.length>30)p.mistakes.shift()}}
 
@@ -1319,7 +1320,7 @@ function renderSettings(){const p=P();show('settings',`
 <div class="card"><div class="row"><div class="grow">Напоминания<div class="small">${LN()?'Каждый день, если урока ещё не было, + «серия сгорит» в 22:30':'Заработают в APK-версии приложения'}</div></div><button class="chip acc" onclick="S.remind=S.remind===false;saveLocal();scheduleReminders();renderSettings()">${S.remind===false?'Выкл':'Вкл'}</button></div><div class="row" style="margin-top:8px"><div class="grow small">Время напоминания</div><input class="field" type="time" style="width:130px;margin:0" value="${S.remindAt||'20:00'}" onchange="S.remindAt=this.value;saveLocal();scheduleReminders()"></div></div>
 <div class="card"><div class="row"><div class="grow">Звуки</div><button class="chip acc" onclick="S.sound=!S.sound;saveLocal();renderSettings()">${S.sound?'Вкл':'Выкл'}</button></div></div>
 <div class="card"><div class="row"><div class="grow">Распознавание речи<div class="small">${SR?'Доступно':'Недоступно — откройте в Chrome'}</div></div></div></div>
-${TRACK==="kids"?"":`<div class="card"><div class="row"><div class="grow">Тест уровня<div class="small">Подберёт юнит по вашим знаниям. Пройденные уроки не сотрутся.</div></div><button class="chip acc" onclick="startPlacement(5)">Пройти</button></div></div>`}
+${TRACK==="kids"?"":`<div class="card"><div class="row"><div class="grow">Уровень<div class="small">Начать с A2 или пройти тест уровня. Пройденные уроки не сотрутся.</div></div><button class="chip acc" onclick="renderLevel()">Сменить</button></div></div>`}
 <button class="link" style="color:var(--bad)" onclick="resetMe()">Сбросить прогресс профиля</button>`,{title:'Настройки',sub:p.nameRu})}
 function saveKey(){S.key=document.getElementById('key').value.trim();S.model=document.getElementById('model').value.trim()||'gemini-3.8-flash';saveLocal();SND.ok();toast('Сохранено')}
 function resetMe(){modal(`<div class="mtitle">Сбросить весь прогресс ${esc(P().nameRu)}?</div><button class="btn bad" onclick="const p=P();S.profiles[p.id]=newProfile(p.id,p.name,p.nameRu,p.avatar,p.theme);save();closeModal();renderSettings()">Сбросить</button><button class="link" onclick="closeModal()">Отмена</button>`,true)}
@@ -1406,21 +1407,32 @@ if(!r.ok&&r.answer)say(r.answer)}
 function nextEx(){if(!L||L.finished)return;stopRec();if(L.mode==='place'){const e=L.items[L.idx];if(L.lastR&&!L.lastR.ok){L.uerr[e.u]=(L.uerr[e.u]||0)+1;if(L.uerr[e.u]>=2)return finishPlacement(e.u)}if(L.idx+1>=L.items.length)return finishPlacement(null)}if(L.maxWrong!=null&&L.wrong>L.maxWrong)return failTest();L.idx++;if(L.idx>=L.items.length)return finishLesson();renderEx()}
 function finishLesson(){const p=P();L.finished=true;const acc=Math.round(100*L.total/(L.total+L.wrong));const secs=Math.round((Date.now()-L.start)/1000);
 let xp={replay:5,practice:5,legend:40,jump:20}[L.mode]||10;if(L.mode==='new'&&L.wrong===0)xp+=5;const nd=addXP(xp);ensureQuest();
-if(L.node&&L.mode==='new')p.done[L.node.id]=true;if(L.mode==='legend')p.legend[COURSE[L.unit].id]=true;if(L.mode==='jump'){NODES.forEach(n=>{if(n.unit<L.unit)p.done[n.id]=true});SELU=L.unit}if(L.mode!=='mistakes')p.quest.lessons++;save();
+if(L.node&&L.mode==='new'){p.done[L.node.id]=true;advU(L.node)}if(L.mode==='legend')p.legend[COURSE[L.unit].id]=true;if(L.mode==='jump'){NODES.forEach(n=>{if(n.unit<L.unit)p.done[n.id]=true});SELU=L.unit}if(L.mode!=='mistakes')p.quest.lessons++;save();
 SND.win();confetti();
 show('end',`<div class="center">${fox(140)}<div class="big2">${L.mode==='legend'?'👑 Юнит легендарный!':L.mode==='jump'?'⏩ Юнит открыт!':L.wrong===0?'Идеальный урок!':'Урок пройден!'}</div><div class="stats"><div class="stat" style="--c:#F5B400"><div class="h">ВСЕГО XP</div><div class="v">⚡${xp}</div></div><div class="stat" style="--c:var(--ok)"><div class="h">ТОЧНОСТЬ</div><div class="v">${acc}%</div></div><div class="stat" style="--c:var(--acc)"><div class="h">ВРЕМЯ</div><div class="v">${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}</div></div></div>${L.maxCombo>=5?`<div class="small" style="margin-top:16px">🔥 Лучшая серия: ${L.maxCombo} ответов подряд</div>`:''}</div><div class="foot"><button class="btn" onclick="${nd?'streakScreen()':'goHome()'}">Продолжить</button></div>`,{title:'Итог урока',sub:L.title})}
 function streakScreen(){const p=P();SND.chest();show('streak',`<div class="center"><div class="flame">🔥</div><div class="streaknum">${p.streak}</div><div class="big2" style="color:#F97316;margin:8px 0 14px">${plural(p.streak,'день','дня','дней')} подряд!</div><div class="small">${p.streak===1?'Начало положено. Возвращайтесь завтра, чтобы не прервать серию.':'Не прерывайте серию — занимайтесь каждый день.'}${p.freezes?' Заморозок в запасе: '+p.freezes+'.':''}</div></div><div class="foot"><button class="btn" onclick="goHome()">Продолжить</button></div>`,{title:'Серия дней',sub:p.nameRu})}
 function openChest(n){if(P().done[n.id]||window.__chest)return;window.__chest=1;const g=rnd(10,30);modal(`<div class="chest shake" id="ch">🎁</div><div id="cr" class="mtitle" style="min-height:30px"></div><button class="btn" id="cb" onclick="closeModal();renderHome()" style="visibility:hidden">Забрать</button>`,true);
-setTimeout(()=>{window.__chest=0;const p=P();if(p.done[n.id])return;p.done[n.id]=true;p.gems+=g;save();SND.chest();confetti();const ch=document.getElementById('ch');if(!ch)return renderHome();ch.textContent='💎';document.getElementById('cr').textContent='+'+g+' кристаллов!';document.getElementById('cb').style.visibility='visible'},1100)}
+setTimeout(()=>{window.__chest=0;const p=P();if(p.done[n.id])return;p.done[n.id]=true;advU(n);p.gems+=g;save();SND.chest();confetti();const ch=document.getElementById('ch');if(!ch)return renderHome();ch.textContent='💎';document.getElementById('cr').textContent='+'+g+' кристаллов!';document.getElementById('cb').style.visibility='visible'},1100)}
 
 /* ===================== AI CALL ===================== */
 let C=null,CALLDONE=true;
-async function gemini(system,history,maxTok){if(!S.key)throw new Error('nokey');
+const GEM_FALLBACK=['gemini-flash-latest','gemini-flash-lite-latest'];
+async function gemOnce(model,system,history,maxTok){
 const body={systemInstruction:{parts:[{text:system}]},contents:history.map(m=>({role:m.role,parts:[{text:m.text}]})),generationConfig:{temperature:.8,maxOutputTokens:Math.max(maxTok||0,1024)}};
-if(/2\.5-flash/.test(S.model))body.generationConfig.thinkingConfig={thinkingBudget:0};
-const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(S.model)+':generateContent?key='+encodeURIComponent(S.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error((j.error&&j.error.message)||('HTTP '+r.status));
-const t=((j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[]).filter(p=>!p.thought).map(p=>p.text||'').join('').trim();if(!t)throw new Error('Пустой ответ модели');return t}
+if(/2\.5-flash/.test(model))body.generationConfig.thinkingConfig={thinkingBudget:0};
+let r;try{r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent?key='+encodeURIComponent(S.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}catch(e){const er=new Error('net');er.code=0;throw er}
+const j=await r.json().catch(()=>({}));if(!r.ok){const er=new Error((j.error&&j.error.message)||('HTTP '+r.status));er.code=r.status;throw er}
+const t=((j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[]).filter(p=>!p.thought).map(p=>p.text||'').join('').trim();if(!t){const er=new Error('empty');er.code=503;throw er}return t}
+async function gemini(system,history,maxTok){if(!S.key)throw new Error('nokey');
+const models=[S.model,...GEM_FALLBACK.filter(m=>m!==S.model)];let last=null;
+for(let mi=0;mi<models.length;mi++){const tries=mi===0?3:1;
+for(let a=0;a<tries;a++){try{return await gemOnce(models[mi],system,history,maxTok)}catch(e){last=e;
+const c=e.code;
+if(c===400||c===401||c===403){if(/API key|API_KEY|permission/i.test(e.message))throw new Error('Ключ Gemini не принят — проверь его в настройках');throw e}
+if(c===404)break;
+if(a<tries-1)await new Promise(r=>setTimeout(r,a?2500:1000))}}}
+if(last&&last.code===0)throw new Error('Нет интернета');
+throw new Error('Лекси сейчас перегружена (сервер Google занят). Попробуй через минуту')}
 function learnerDesc(p){if(p.track==='kids')return `The learner is ${p.name}, a 9-year-old girl from Almaty (native Russian speaker) who loves swimming, Roblox, chess and drawing. Level A1. IMPORTANT: speak VERY simply — one short sentence, maximum 12 words, easy words only, playful, warm and encouraging like a kind friend; praise her answers. Never ask for personal details (address, school name, phone, photos). Keep everything safe and age-appropriate.`;
 if(p.id==='chingiz'||p.nameRu==='Чингиз')return `The learner is ${p.name}, a 13-year-old boy from Almaty (native Russian speaker) who loves football, Fortnite, Roblox and chess. Level A2–B1: can express simple thoughts and is learning to speak more freely. Be friendly and casual like a cool older friend; bring in his interests when natural. Never ask for personal details (address, school name, phone, photos). Keep everything age-appropriate.`;
 return `The learner is ${p.name}, an adult from Almaty, Kazakhstan, native Russian speaker, level A2: reads and understands basic English but is learning to SPEAK.`}
@@ -1459,7 +1471,7 @@ let fb='',okfb=true;try{fb=await gemini(P().track==='kids'?'You are a kind Engli
 let stars=0;if(role&&okfb){const mm=fb.match(/ЗВ[ЁЕ]ЗДЫ\s*:\s*(\d)/i);stars=mm?Math.max(1,Math.min(3,+mm[1])):1;fb=fb.replace(/^.*ЗВ[ЁЕ]ЗДЫ.*(\n|$)/im,'').replace(/^\(N от.*(\n|$)/im,'').trim()}
 const p=P();if(okfb){p.calls.push({d:today(),fb:fb.slice(0,400)});if(p.calls.length>5)p.calls.shift()}
 const xp=role?10+5*stars:c.repeat?5:15;if(role)p.roles[c.role.id]=Math.max(p.roles[c.role.id]||0,stars);
-const nd=addXP(xp);ensureQuest();p.quest.calls++;if(c.node&&!c.repeat)p.done[c.node.id]=true;save();CALLDONE=true;
+const nd=addXP(xp);ensureQuest();p.quest.calls++;if(c.node&&!c.repeat){p.done[c.node.id]=true;advU(c.node)}save();CALLDONE=true;
 if(VIEW!=='callend')return;SND.win();confetti();
 if(role&&stars)document.getElementById('stars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
 document.getElementById('fb').textContent=fb+`\n\n⚡ +${xp} XP`;const b=document.getElementById('fbb');b.disabled=false;if(nd)b.setAttribute('onclick','streakScreen()')}
