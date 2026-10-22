@@ -244,7 +244,7 @@ h1,h2,.uf{font-family:Unbounded,Nunito,system-ui,sans-serif;font-weight:800;lett
 <div id="app"></div>
 <script>
 /* ===================== CONTENT ===================== */
-const COURSE=[
+const COURSE_ADULT=[
 {id:'u1',title:'Знакомство',icon:'👋',color:'#58CC02',dark:'#58A700',call:'Meeting a new friend: introduce yourselves, talk about family, work and weekend plans. Lexi is a friendly new neighbour.',
 lessons:[
 {id:'u1l1',title:'Приветствия',words:[['hello','привет','👋'],['good morning','доброе утро','🌅'],['good night','спокойной ночи','🌙'],['thank you','спасибо','🙏'],['please','пожалуйста','🤲'],['friend','друг','🤝']],
@@ -428,8 +428,162 @@ phrases:[['He said that he was busy.','Он сказал, что занят.'],[
 phrases:[['Traffic in Almaty is getting worse.','Пробки в Алматы становятся хуже.'],['Air pollution is a serious issue.','Загрязнение воздуха — серьёзная проблема.'],['The city should build more metro lines.','Городу стоит построить больше линий метро.'],['I think public transport should be cheaper.','Думаю, общественный транспорт должен быть дешевле.'],['What can people do about it?','Что люди могут с этим сделать?'],['We need to protect the environment.','Нам нужно защищать окружающую среду.'],['These measures will not help much.','Эти меры мало помогут.'],['On the one hand it is good, on the other hand it is expensive.','С одной стороны это хорошо, с другой — дорого.']]}
 ]}
 ];
-const NODES=[];
-COURSE.forEach((u,ui)=>{u.lessons.forEach((l,li)=>{NODES.push({type:'lesson',id:l.id,unit:ui,lesson:l,num:li+1,of:u.lessons.length});if(li===1)NODES.push({type:'chest',id:u.id+'-chest',unit:ui})});NODES.push({type:'call',id:u.id+'-call',unit:ui,topic:u.call})});
+const COURSE_KIDS=[
+{id:'k1',title:'Привет!',icon:'👋',color:'#FF3D7F',dark:'#C81E5B',call:'A first meeting. Lexi says hello, asks the child her name, how she is, her favourite colour, and counts to ten together.',
+lessons:[
+{id:'k1l1',title:'Здравствуй',words:[['hello','привет','👋'],['goodbye','пока','🙋'],['yes','да','👍'],['no','нет','👎'],['please','пожалуйста','🙏'],['thank you','спасибо','💐']],
+phrases:[['Hello!','Привет!'],['My name is {NAME}.','Меня зовут {NAME_RU}.'],['What is your name?','Как тебя зовут?'],['How are you?','Как дела?'],['I am fine, thank you.','Хорошо, спасибо.'],['Goodbye!','Пока!'],['Nice to meet you!','Приятно познакомиться!']]},
+{id:'k1l2',title:'Цвета',words:[['red','красный','🔴'],['blue','синий','🔵'],['green','зелёный','🟢'],['yellow','жёлтый','🟡'],['pink','розовый','🩷'],['purple','фиолетовый','🟣']],
+phrases:[['It is red.','Он красный.'],['My bag is pink.','Мой рюкзак розовый.'],['I like blue.','Мне нравится синий.'],['What colour is it?','Какого он цвета?'],['The sun is yellow.','Солнце жёлтое.'],['The grass is green.','Трава зелёная.'],['My favourite colour is purple.','Мой любимый цвет — фиолетовый.']]},
+{id:'k1l3',title:'Числа',words:[['one','один','1️⃣'],['two','два','2️⃣'],['three','три','3️⃣'],['five','пять','5️⃣'],['eight','восемь','8️⃣'],['ten','десять','🔟']],
+phrases:[['I am nine.','Мне девять лет.'],['How old are you?','Сколько тебе лет?'],['I have two cats.','У меня две кошки.'],['One, two, three!','Раз, два, три!'],['I can count to ten.','Я умею считать до десяти.'],['I have five pencils.','У меня пять карандашей.'],['My brother is thirteen.','Моему брату тринадцать.']]}
+]},
+{id:'k2',title:'Моя школа',icon:'🎒',color:'#1CB0F6',dark:'#1899D6',call:'School. Lexi asks what is in the child\'s school bag, who her teacher is, her best friend and her favourite lesson.',
+lessons:[
+{id:'k2l1',title:'Мой рюкзак',words:[['pen','ручка','🖊️'],['pencil','карандаш','✏️'],['book','книга','📕'],['ruler','линейка','📏'],['rubber','ластик','🧽'],['bag','рюкзак','🎒']],
+phrases:[['This is my pen.','Это моя ручка.'],['I have a new pencil.','У меня новый карандаш.'],['Is this your book?','Это твоя книга?'],['My bag is big.','Мой рюкзак большой.'],['Can I have a rubber, please?','Можно ластик, пожалуйста?'],['Where is my ruler?','Где моя линейка?'],['It is in my bag.','Он в моём рюкзаке.']]},
+{id:'k2l2',title:'В классе',words:[['teacher','учитель','👩‍🏫'],['board','доска','🧑‍🏫'],['desk','парта','🪑'],['door','дверь','🚪'],['open','открыть','📖'],['listen','слушать','👂']],
+phrases:[['Open your book.','Открой книгу.'],['Close the door, please.','Закрой дверь, пожалуйста.'],['Listen to the teacher.','Слушай учителя.'],['Sit down, please.','Садись, пожалуйста.'],['Stand up!','Встань!'],['Can I go out, please?','Можно выйти?'],['I do not understand.','Я не понимаю.']]},
+{id:'k2l3',title:'Друзья',words:[['friend','друг','🤝'],['classmate','одноклассник','🧒'],['lesson','урок','📚'],['maths','математика','➕'],['English','английский','🇬🇧'],['break','перемена','🔔']],
+phrases:[['This is my friend.','Это моя подруга.'],['She is in my class.','Она в моём классе.'],['My favourite lesson is maths.','Мой любимый урок — математика.'],['I like English.','Мне нравится английский.'],['We play at break.','На перемене мы играем.'],['My teacher is kind.','Моя учительница добрая.'],['I go to school by car.','Я езжу в школу на машине.']]}
+]},
+{id:'k3',title:'Моя семья',icon:'👨‍👩‍👧',color:'#FF9600',dark:'#CC7800',call:'Family. Lexi asks the child about her mum, dad and brother, what they look like, and about pets.',
+lessons:[
+{id:'k3l1',title:'Семья',words:[['mum','мама','👩'],['dad','папа','👨'],['brother','брат','👦'],['sister','сестра','👧'],['grandma','бабушка','👵'],['grandpa','дедушка','👴']],
+phrases:[['This is my mum.','Это моя мама.'],['My dad is tall.','Мой папа высокий.'],['I have a brother.','У меня есть брат.'],['His name is Chingiz.','Его зовут Чингиз.'],['I love my family.','Я люблю свою семью.'],['My grandma is very kind.','Моя бабушка очень добрая.'],['Do you have a sister?','У тебя есть сестра?']]},
+{id:'k3l2',title:'Какой он?',words:[['tall','высокий','🦒'],['short','низкий','🐭'],['hair','волосы','💇'],['eyes','глаза','👀'],['happy','весёлый','😊'],['funny','смешной','😂']],
+phrases:[['She has long hair.','У неё длинные волосы.'],['He has brown eyes.','У него карие глаза.'],['My brother is funny.','Мой брат смешной.'],['My mum is beautiful.','Моя мама красивая.'],['I am happy today.','Я сегодня весёлая.'],['He is tall and strong.','Он высокий и сильный.'],['I have black hair.','У меня чёрные волосы.']]},
+{id:'k3l3',title:'Питомцы',words:[['cat','кошка','🐱'],['dog','собака','🐶'],['fish','рыбка','🐠'],['rabbit','кролик','🐰'],['bird','птица','🐦'],['hamster','хомяк','🐹']],
+phrases:[['I have a cat.','У меня есть кошка.'],['My dog is black.','Моя собака чёрная.'],['Do you have a pet?','У тебя есть питомец?'],['The cat is sleeping.','Кошка спит.'],['I want a rabbit.','Я хочу кролика.'],['My fish is small.','Моя рыбка маленькая.'],['The dog can run fast.','Собака умеет быстро бегать.']]}
+]},
+{id:'k4',title:'Погода и одежда',icon:'☀️',color:'#14B8A6',dark:'#0D857A',call:'Weather and clothes. Lexi asks what the weather is like today, what the child is wearing, and her favourite season.',
+lessons:[
+{id:'k4l1',title:'Погода',words:[['sunny','солнечно','☀️'],['rainy','дождливо','🌧️'],['snowy','снежно','❄️'],['windy','ветрено','💨'],['hot','жарко','🥵'],['cold','холодно','🥶']],
+phrases:[['It is sunny today.','Сегодня солнечно.'],['It is cold outside.','На улице холодно.'],['It is raining.','Идёт дождь.'],['What is the weather like?','Какая погода?'],['I like snowy days.','Я люблю снежные дни.'],['It is very hot!','Очень жарко!'],['Take your umbrella.','Возьми зонтик.']]},
+{id:'k4l2',title:'Одежда',words:[['dress','платье','👗'],['T-shirt','футболка','👕'],['jacket','куртка','🧥'],['hat','шапка','👒'],['boots','сапоги','👢'],['scarf','шарф','🧣']],
+phrases:[['I am wearing a dress.','Я в платье.'],['Put on your hat.','Надень шапку.'],['My jacket is pink.','Моя куртка розовая.'],['I like this T-shirt.','Мне нравится эта футболка.'],['Where are my boots?','Где мои сапоги?'],['It is cold, take a scarf.','Холодно, возьми шарф.'],['This dress is beautiful.','Это платье красивое.']]},
+{id:'k4l3',title:'Времена года',words:[['winter','зима','⛄'],['spring','весна','🌷'],['summer','лето','🏖️'],['autumn','осень','🍂'],['flower','цветок','🌸'],['snowman','снеговик','☃️']],
+phrases:[['My favourite season is summer.','Моё любимое время года — лето.'],['In winter we make a snowman.','Зимой мы лепим снеговика.'],['In spring there are many flowers.','Весной много цветов.'],['In autumn the leaves are yellow.','Осенью листья жёлтые.'],['I can swim in summer.','Летом я могу плавать.'],['My birthday is in autumn.','Мой день рождения осенью.'],['I love winter.','Я люблю зиму.']]}
+]},
+{id:'k5',title:'Еда',icon:'🍎',color:'#58CC02',dark:'#58A700',call:'Food. Lexi asks what the child likes to eat and drink, what she has for breakfast, and plays a game: "Do you like…?"',
+lessons:[
+{id:'k5l1',title:'Фрукты',words:[['apple','яблоко','🍎'],['banana','банан','🍌'],['orange','апельсин','🍊'],['grapes','виноград','🍇'],['strawberry','клубника','🍓'],['watermelon','арбуз','🍉']],
+phrases:[['I like apples.','Я люблю яблоки.'],['Bananas are yellow.','Бананы жёлтые.'],['Can I have an orange, please?','Можно апельсин, пожалуйста?'],['I love strawberries!','Обожаю клубнику!'],['This watermelon is big.','Этот арбуз большой.'],['Do you like grapes?','Ты любишь виноград?'],['Fruit is good for you.','Фрукты полезные.']]},
+{id:'k5l2',title:'Завтрак',words:[['milk','молоко','🥛'],['bread','хлеб','🍞'],['egg','яйцо','🥚'],['juice','сок','🧃'],['cheese','сыр','🧀'],['pancakes','блины','🥞']],
+phrases:[['I have breakfast at seven.','Я завтракаю в семь.'],['I drink milk.','Я пью молоко.'],['I eat eggs and bread.','Я ем яйца и хлеб.'],['Can I have some juice?','Можно мне сока?'],['Mum makes pancakes.','Мама печёт блины.'],['I am hungry!','Я хочу есть!'],['It is yummy!','Это вкусно!']]},
+{id:'k5l3',title:'Люблю — не люблю',words:[['pizza','пицца','🍕'],['ice cream','мороженое','🍦'],['soup','суп','🍲'],['chocolate','шоколад','🍫'],['carrot','морковь','🥕'],['cake','торт','🎂']],
+phrases:[['I like pizza.','Я люблю пиццу.'],['I do not like soup.','Я не люблю суп.'],['Do you like ice cream?','Ты любишь мороженое?'],['Yes, I do!','Да, люблю!'],['No, I do not.','Нет, не люблю.'],['Chocolate is my favourite.','Шоколад — мой любимый.'],['Carrots are good for your eyes.','Морковь полезна для глаз.']]}
+]},
+{id:'k6',title:'Игры и хобби',icon:'🎮',color:'#8B5CF6',dark:'#6532D8',call:'Free time. Lexi asks what the child likes to do after school, what games she plays, what she can and cannot do, and invites her to play a word game.',
+lessons:[
+{id:'k6l1',title:'После школы',words:[['play','играть','🧸'],['draw','рисовать','🎨'],['dance','танцевать','💃'],['sing','петь','🎤'],['read','читать','📖'],['watch','смотреть','📺']],
+phrases:[['I like drawing.','Я люблю рисовать.'],['I play with my friends.','Я играю с друзьями.'],['She likes dancing.','Она любит танцевать.'],['I watch cartoons.','Я смотрю мультики.'],['What do you like doing?','Что ты любишь делать?'],['I read books in the evening.','Вечером я читаю книги.'],['Let us sing a song!','Давай споём песню!']]},
+{id:'k6l2',title:'Я умею',words:[['can','умею','✅'],['cannot','не умею','❌'],['swim','плавать','🏊‍♀️'],['ride a bike','кататься на велосипеде','🚲'],['skate','кататься на коньках','⛸️'],['jump','прыгать','🦘']],
+phrases:[['I can swim.','Я умею плавать.'],['I can ride a bike.','Я умею кататься на велосипеде.'],['I cannot skate.','Я не умею кататься на коньках.'],['Can you jump high?','Ты умеешь высоко прыгать?'],['Yes, I can!','Да, умею!'],['My brother can play chess.','Мой брат умеет играть в шахматы.'],['I can draw a cat.','Я умею рисовать кошку.']]},
+{id:'k6l3',title:'Игры',words:[['game','игра','🎮'],['chess','шахматы','♟️'],['level','уровень','🏁'],['win','выиграть','🏆'],['team','команда','👭'],['turn','очередь','🔁']],
+phrases:[['Let us play a game!','Давай поиграем!'],['It is my turn.','Моя очередь.'],['I won!','Я выиграла!'],['We are a team.','Мы команда.'],['This level is hard.','Этот уровень трудный.'],['Do you want to play chess?','Хочешь сыграть в шахматы?'],['Good game!','Хорошая игра!']]}
+]},
+{id:'k7',title:'Плавание и спорт',icon:'🏊‍♀️',color:'#0EA5E9',dark:'#0369A1',call:'Sport. Lexi asks about swimming: when the child goes to the pool, who her coach is, how far she can swim, and about other sports she likes.',
+lessons:[
+{id:'k7l1',title:'В бассейне',words:[['pool','бассейн','🏊'],['swimsuit','купальник','👙'],['goggles','очки для плавания','🥽'],['coach','тренер','🧑‍🏫'],['water','вода','💧'],['towel','полотенце','🧺']],
+phrases:[['I go to the pool on Monday.','Я хожу в бассейн в понедельник.'],['I can swim fast.','Я умею быстро плавать.'],['Where are my goggles?','Где мои очки для плавания?'],['The water is warm.','Вода тёплая.'],['My coach is very good.','Мой тренер очень хороший.'],['Do not forget your towel.','Не забудь полотенце.'],['I love swimming!','Я обожаю плавать!']]},
+{id:'k7l2',title:'Моё тело',words:[['head','голова','🙂'],['arm','рука','💪'],['leg','нога','🦵'],['hand','кисть руки','✋'],['foot','стопа','🦶'],['back','спина','🧍']],
+phrases:[['Touch your head.','Дотронься до головы.'],['Move your arms.','Двигай руками.'],['Jump on one leg.','Прыгай на одной ноге.'],['Clap your hands!','Хлопай в ладоши!'],['My leg hurts.','У меня болит нога.'],['Stand on your feet.','Встань на ноги.'],['Swimming is good for your back.','Плавание полезно для спины.']]},
+{id:'k7l3',title:'Соревнования',words:[['race','заплыв','🏁'],['first','первая','🥇'],['second','вторая','🥈'],['medal','медаль','🏅'],['fast','быстро','⚡'],['strong','сильная','💪']],
+phrases:[['I have a race on Sunday.','У меня заплыв в воскресенье.'],['I was first!','Я была первой!'],['She was second.','Она была второй.'],['I got a medal.','Я получила медаль.'],['You are very fast!','Ты очень быстрая!'],['I am a little nervous.','Я немного волнуюсь.'],['Well done!','Молодец!']]}
+]},
+{id:'k8',title:'Мой дом',icon:'🏠',color:'#EC4899',dark:'#BE185D',call:'Home. Lexi asks the child to describe her room, where things are, and what is in the kitchen and living room.',
+lessons:[
+{id:'k8l1',title:'Комнаты',words:[['bedroom','спальня','🛏️'],['kitchen','кухня','🍳'],['bathroom','ванная','🛁'],['living room','гостиная','🛋️'],['garden','сад','🌳'],['window','окно','🪟']],
+phrases:[['This is my bedroom.','Это моя спальня.'],['Mum is in the kitchen.','Мама на кухне.'],['We watch TV in the living room.','Мы смотрим телевизор в гостиной.'],['There is a big window.','Там большое окно.'],['My house has a garden.','У моего дома есть сад.'],['Where is the bathroom?','Где ванная?'],['I love my room.','Я люблю свою комнату.']]},
+{id:'k8l2',title:'Где это?',words:[['on','на','⬆️'],['in','в','📥'],['under','под','⬇️'],['next to','рядом с','↔️'],['bed','кровать','🛏️'],['table','стол','🪑']],
+phrases:[['The cat is on the bed.','Кошка на кровати.'],['My doll is in the box.','Моя кукла в коробке.'],['The ball is under the table.','Мяч под столом.'],['The lamp is next to the bed.','Лампа рядом с кроватью.'],['Where is my phone?','Где мой телефон?'],['It is on the table.','Он на столе.'],['There are two chairs.','Там два стула.']]},
+{id:'k8l3',title:'Моя комната',words:[['toy','игрушка','🧸'],['doll','кукла','🪆'],['lamp','лампа','💡'],['picture','картинка','🖼️'],['wardrobe','шкаф','🚪'],['carpet','ковёр','🟪']],
+phrases:[['I have many toys.','У меня много игрушек.'],['There is a picture on the wall.','На стене картинка.'],['My room is pink and white.','Моя комната розово-белая.'],['I tidy my room on Saturday.','Я убираю комнату в субботу.'],['My clothes are in the wardrobe.','Моя одежда в шкафу.'],['I play on the carpet.','Я играю на ковре.'],['Come and see my room!','Приходи посмотреть мою комнату!']]}
+]},
+{id:'k9',title:'Каникулы',icon:'✈️',color:'#F59E0B',dark:'#B45309',call:'Holidays. Lexi asks where the child went on holiday, how they travelled, what she saw, and what she likes to do at the sea.',
+lessons:[
+{id:'k9l1',title:'Транспорт',words:[['car','машина','🚗'],['bus','автобус','🚌'],['train','поезд','🚆'],['plane','самолёт','✈️'],['boat','лодка','⛵'],['bike','велосипед','🚲']],
+phrases:[['We go by car.','Мы едем на машине.'],['I like trains.','Я люблю поезда.'],['The plane is very big.','Самолёт очень большой.'],['We go to school by bus.','Мы ездим в школу на автобусе.'],['Let us ride a bike!','Давай кататься на велосипеде!'],['The boat is on the sea.','Лодка на море.'],['How do you go to school?','Как ты добираешься до школы?']]},
+{id:'k9l2',title:'На море',words:[['sea','море','🌊'],['beach','пляж','🏖️'],['sand','песок','🏝️'],['shell','ракушка','🐚'],['sun','солнце','☀️'],['sandcastle','замок из песка','🏰']],
+phrases:[['We are at the beach.','Мы на пляже.'],['I swim in the sea.','Я плаваю в море.'],['I make a sandcastle.','Я строю замок из песка.'],['Look, a shell!','Смотри, ракушка!'],['The sun is hot.','Солнце жаркое.'],['I love the sea.','Я люблю море.'],['Let us go to the beach!','Пойдём на пляж!']]},
+{id:'k9l3',title:'Где я была',words:[['went','ездила','🧳'],['saw','видела','👀'],['was','была','📍'],['ate','ела','🍽️'],['holiday','каникулы','🎒'],['photo','фото','📸']],
+phrases:[['I went to Turkey.','Я ездила в Турцию.'],['It was fun!','Было весело!'],['I saw dolphins.','Я видела дельфинов.'],['We ate ice cream every day.','Мы каждый день ели мороженое.'],['Where did you go?','Куда ты ездила?'],['I took many photos.','Я сделала много фото.'],['I want to go again!','Я хочу ещё раз!']]}
+]},
+{id:'k10',title:'Животные',icon:'🐬',color:'#6366F1',dark:'#4338CA',call:'Animals. Lexi asks about the child\'s favourite animals, sea animals, the zoo, and plays "bigger or smaller" with animals.',
+lessons:[
+{id:'k10l1',title:'В море',words:[['dolphin','дельфин','🐬'],['whale','кит','🐋'],['turtle','черепаха','🐢'],['octopus','осьминог','🐙'],['shark','акула','🦈'],['crab','краб','🦀']],
+phrases:[['Dolphins are clever.','Дельфины умные.'],['A whale is very big.','Кит очень большой.'],['The turtle swims slowly.','Черепаха плывёт медленно.'],['An octopus has eight legs.','У осьминога восемь ног.'],['I am not afraid of sharks.','Я не боюсь акул.'],['Look at the crab!','Посмотри на краба!'],['My favourite animal is a dolphin.','Моё любимое животное — дельфин.']]},
+{id:'k10l2',title:'В зоопарке',words:[['lion','лев','🦁'],['monkey','обезьяна','🐒'],['elephant','слон','🐘'],['giraffe','жираф','🦒'],['zebra','зебра','🦓'],['bear','медведь','🐻']],
+phrases:[['We are at the zoo.','Мы в зоопарке.'],['The monkey is funny.','Обезьяна смешная.'],['The lion is sleeping.','Лев спит.'],['A giraffe has a long neck.','У жирафа длинная шея.'],['Elephants are grey.','Слоны серые.'],['The zebra is black and white.','Зебра чёрно-белая.'],['Can we feed the bear?','Можно покормить медведя?']]},
+{id:'k10l3',title:'Больше или меньше',words:[['big','большой','🐘'],['small','маленький','🐭'],['bigger','больше','⬆️'],['smaller','меньше','⬇️'],['fast','быстрый','🐆'],['slow','медленный','🐌']],
+phrases:[['An elephant is bigger than a cat.','Слон больше кошки.'],['A mouse is smaller than a dog.','Мышь меньше собаки.'],['A cheetah is very fast.','Гепард очень быстрый.'],['A snail is slow.','Улитка медленная.'],['Which is bigger?','Кто больше?'],['A whale is the biggest animal.','Кит — самое большое животное.'],['I am taller than my friend.','Я выше своей подруги.']]}
+]}
+];
+const GUIDES_KIDS={
+k1:{rules:[{t:'Как представиться',x:'My name is… — Меня зовут… На вопрос How are you? отвечают I am fine, thank you.',ex:[['My name is {NAME}.','Меня зовут {NAME_RU}.'],['I am fine, thank you.','Хорошо, спасибо.']]},{t:'Цвета и числа',x:'Цвет ставим после is: It is red. Сколько лет: I am nine.',ex:[['It is red.','Он красный.'],['I am nine.','Мне девять лет.']]}],phrases:[['Hello!','Привет!'],['What is your name?','Как тебя зовут?'],['Goodbye!','Пока!']]},
+k2:{rules:[{t:'Это мой…',x:'This is my… — Это мой… Вопрос: Is this your…? — Это твой…?',ex:[['This is my pen.','Это моя ручка.'],['Is this your book?','Это твоя книга?']]},{t:'Просьбы в классе',x:'Просим вежливо: Can I…, please? Команды учителя: Open, Close, Listen, Sit down.',ex:[['Can I go out, please?','Можно выйти?'],['Open your book.','Открой книгу.']]}],phrases:[['I do not understand.','Я не понимаю.'],['This is my friend.','Это моя подруга.']]},
+k3:{rules:[{t:'have — у меня есть',x:'I have a brother — у меня есть брат. Про другого: She has long hair — у неё длинные волосы.',ex:[['I have a brother.','У меня есть брат.'],['She has long hair.','У неё длинные волосы.']]},{t:'he и she',x:'he — он (мальчик, папа), she — она (девочка, мама). His name — его имя, her name — её имя.',ex:[['His name is Chingiz.','Его зовут Чингиз.'],['My mum is beautiful.','Моя мама красивая.']]}],phrases:[['I love my family.','Я люблю свою семью.'],['Do you have a pet?','У тебя есть питомец?']]},
+k4:{rules:[{t:'It is… — про погоду',x:'Погоду начинаем с It is: It is sunny, It is cold. Дождь идёт сейчас: It is raining.',ex:[['It is sunny today.','Сегодня солнечно.'],['It is raining.','Идёт дождь.']]},{t:'I am wearing…',x:'Что на мне сейчас надето: I am wearing a dress.',ex:[['I am wearing a dress.','Я в платье.'],['Put on your hat.','Надень шапку.']]}],phrases:[['What is the weather like?','Какая погода?'],['I love winter.','Я люблю зиму.']]},
+k5:{rules:[{t:'I like / I do not like',x:'Люблю: I like pizza. Не люблю: I do not like soup. Вопрос: Do you like…? Ответ: Yes, I do. / No, I do not.',ex:[['I do not like soup.','Я не люблю суп.'],['Do you like ice cream?','Ты любишь мороженое?']]},{t:'a и an',x:'Перед одним предметом: a banana, но an apple, an orange — если слово начинается с гласного звука.',ex:[['Can I have an orange, please?','Можно апельсин, пожалуйста?'],['I eat eggs and bread.','Я ем яйца и хлеб.']]}],phrases:[['I am hungry!','Я хочу есть!'],['It is yummy!','Это вкусно!']]},
+k6:{rules:[{t:'can — умею',x:'I can swim — я умею плавать. I cannot skate — не умею. Вопрос: Can you…? Ответ: Yes, I can. / No, I cannot.',ex:[['I can swim.','Я умею плавать.'],['Can you jump high?','Ты умеешь высоко прыгать?']]},{t:'like + -ing',x:'Любить что-то делать: I like drawing, she likes dancing.',ex:[['I like drawing.','Я люблю рисовать.'],['She likes dancing.','Она любит танцевать.']]}],phrases:[['Let us play a game!','Давай поиграем!'],['It is my turn.','Моя очередь.']]},
+k7:{rules:[{t:'Команды тренера',x:'Команды начинаются с глагола: Touch, Move, Jump, Clap. Не делай: Do not…',ex:[['Clap your hands!','Хлопай в ладоши!'],['Do not forget your towel.','Не забудь полотенце.']]},{t:'Я была первой',x:'Про прошедшее: I was first, I got a medal — я получила медаль.',ex:[['I was first!','Я была первой!'],['I got a medal.','Я получила медаль.']]}],phrases:[['I love swimming!','Я обожаю плавать!'],['Well done!','Молодец!']]},
+k8:{rules:[{t:'There is / There are',x:'Что где есть: There is a window (одно), There are two chairs (много).',ex:[['There is a big window.','Там большое окно.'],['There are two chairs.','Там два стула.']]},{t:'on, in, under, next to',x:'on — на, in — в, under — под, next to — рядом с.',ex:[['The cat is on the bed.','Кошка на кровати.'],['The ball is under the table.','Мяч под столом.']]}],phrases:[['This is my bedroom.','Это моя спальня.'],['Come and see my room!','Приходи посмотреть мою комнату!']]},
+k9:{rules:[{t:'by — на чём едем',x:'by car — на машине, by bus — на автобусе, by train — на поезде, by plane — на самолёте.',ex:[['We go by car.','Мы едем на машине.'],['We go to school by bus.','Мы ездим в школу на автобусе.']]},{t:'Что было: went, saw, ate',x:'Про прошлое глаголы меняются: go → went, see → saw, eat → ate, is → was.',ex:[['I went to Turkey.','Я ездила в Турцию.'],['It was fun!','Было весело!']]}],phrases:[['Where did you go?','Куда ты ездила?'],['I want to go again!','Я хочу ещё раз!']]},
+k10:{rules:[{t:'Больше, меньше: -er than',x:'Сравниваем: bigger than — больше чем, smaller than — меньше чем, taller than — выше чем.',ex:[['An elephant is bigger than a cat.','Слон больше кошки.'],['I am taller than my friend.','Я выше своей подруги.']]},{t:'Самый: the -est',x:'Самый большой — the biggest, самый быстрый — the fastest.',ex:[['A whale is the biggest animal.','Кит — самое большое животное.'],['Which is bigger?','Кто больше?']]}],phrases:[['My favourite animal is a dolphin.','Моё любимое животное — дельфин.'],['We are at the zoo.','Мы в зоопарке.']]}
+};
+const STORIES_KIDS=[
+{id:'ks1',u:0,ico:'🐱',title:'Новая подруга',kid:1,items:[
+['n','Mia is at a new school.','Мия в новой школе.'],
+['ben','Hello! What is your name?','Привет! Как тебя зовут?'],
+['mia','Hi! My name is Mia.','Привет! Меня зовут Мия.'],
+{q:'Как зовут девочку?',o:['Мия','Бен','Лекси'],a:0},
+['ben','I am Ben. How old are you?','Я Бен. Сколько тебе лет?'],
+['mia','I am nine. And you?','Мне девять. А тебе?'],
+{f:'ben',en:'I am nine ___!',ru:'Мне тоже девять!',o:['too','two','to'],a:0},
+['ben','What is your favourite colour?','Какой твой любимый цвет?'],
+['mia','Pink! My bag is pink.','Розовый! Мой рюкзак розовый.'],
+{q:'Какой любимый цвет у Мии?',o:['Розовый','Синий','Зелёный'],a:0}],
+m:[['hello','привет'],['name','имя'],['nine','девять'],['pink','розовый']]},
+{id:'ks2',u:2,ico:'🐶',title:'Где мой щенок?',kid:1,items:[
+['n','Ben has a little dog. Its name is Max.','У Бена есть маленькая собака. Её зовут Макс.'],
+['ben','Mum! Where is Max?','Мама! Где Макс?'],
+['mia','Is he in the kitchen?','Он на кухне?'],
+['ben','No, he is not.','Нет.'],
+{q:'Кого ищет Бен?',o:['Собаку','Кошку','Маму'],a:0},
+['mia','Is he under the bed?','Может, под кроватью?'],
+{f:'ben',en:'Yes! He is ___ the bed! He is sleeping.',ru:'Да! Он под кроватью! Он спит.',o:['under','on','in'],a:0},
+['mia','He is so funny!','Он такой смешной!'],
+{q:'Что делает щенок?',o:['Спит','Ест','Играет'],a:0}],
+m:[['dog','собака'],['kitchen','кухня'],['under','под'],['sleeping','спит']]},
+{id:'ks3',u:6,ico:'🏅',title:'Первый заплыв',kid:1,items:[
+['n','Today Mia has her first swimming race.','Сегодня у Мии первый заплыв.'],
+['mia','I am a little nervous.','Я немного волнуюсь.'],
+['ben','You can swim very fast. You can do it!','Ты очень быстро плаваешь. Ты сможешь!'],
+{q:'Как себя чувствует Мия?',o:['Немного волнуется','Ей скучно','Она злится'],a:0},
+['n','Ready, steady, go!','На старт, внимание, марш!'],
+['ben','Go, Mia, go!','Давай, Мия, давай!'],
+{f:'mia',en:'I was ___!',ru:'Я была первой!',o:['first','fast','fish'],a:0},
+['ben','Well done! You got a medal!','Молодец! Ты получила медаль!'],
+{q:'Что получила Мия?',o:['Медаль','Торт','Мяч'],a:0}],
+m:[['race','заплыв'],['nervous','волнуюсь'],['first','первая'],['medal','медаль']]},
+{id:'ks4',u:8,ico:'🏖️',title:'На море',kid:1,items:[
+['mia','Look! The sea is so blue!','Смотри! Море такое синее!'],
+['ben','Let us make a sandcastle!','Давай построим замок из песка!'],
+['mia','OK! I have a bucket.','Давай! У меня есть ведёрко.'],
+{q:'Что дети хотят построить?',o:['Замок из песка','Лодку','Дом'],a:0},
+['ben','Look, a big shell!','Смотри, большая ракушка!'],
+{f:'mia',en:'And I can ___ a dolphin in the sea!',ru:'А я вижу дельфина в море!',o:['see','sea','say'],a:0},
+['ben','Wow! It is jumping!','Ого! Он прыгает!'],
+['mia','This is the best holiday!','Это лучшие каникулы!'],
+{q:'Кого Мия увидела в море?',o:['Дельфина','Акулу','Кита'],a:0}],
+m:[['sea','море'],['sandcastle','замок из песка'],['shell','ракушка'],['dolphin','дельфин']]}
+];
+
+let COURSE=COURSE_ADULT,NODES=[],TRACK='adult';
+function buildNodes(){NODES=[];COURSE.forEach((u,ui)=>{u.lessons.forEach((l,li)=>{NODES.push({type:'lesson',id:l.id,unit:ui,lesson:l,num:li+1,of:u.lessons.length});if(li===1)NODES.push({type:'chest',id:u.id+'-chest',unit:ui})});NODES.push({type:'call',id:u.id+'-call',unit:ui,topic:u.call})});}
+function setTrack(t){TRACK=t==='kids'?'kids':'adult';COURSE=TRACK==='kids'?COURSE_KIDS:COURSE_ADULT;buildNodes()}
+setTrack('adult');
 /* ===================== GUIDEBOOK & ROLEPLAY ===================== */
 const GUIDES={
 u1:{rules:[
@@ -580,8 +734,13 @@ function sharedStreak(a,b){const A=new Set(a.days||[]),B=new Set(b.days||[]);con
 for(;;){const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');if(A.has(k)&&B.has(k)){n++;d.setDate(d.getDate()-1)}else break}return n}
 let S=load()||{v:1,current:null,sound:true,rate:0.95,key:'',model:'gemini-3.8-flash',profiles:{adil:newProfile('adil','Adil','Адиль','🧔','adil'),sagi:newProfile('sagi','Sagi','Саги','👩','sagi')}};
 if(S.model==='gemini-2.5-flash')S.model='gemini-3.8-flash';
+(()=>{const has=(id,ru)=>S.profiles[id]||Object.values(S.profiles).find(p=>p.nameRu===ru);
+if(!has('chingiz','Чингиз'))S.profiles.chingiz=newProfile('chingiz','Chingiz','Чингиз','⚽','chingiz');
+if(!has('tamina','Тамина')){S.profiles.tamina=newProfile('tamina','Tamina','Тамина','🌸','tamina');S.profiles.tamina.track='kids'}
+const t=Object.values(S.profiles).find(p=>p.nameRu==='Тамина');if(t)t.track='kids';})();
 Object.values(S.profiles).forEach(normProfile);
 if(S.current&&!S.profiles[S.current])S.current=null;
+if(S.current)setTrack(S.profiles[S.current].track);
 saveLocal();
 const P=()=>S.profiles[S.current];
 let VIEW='pick',SELU=null;
@@ -619,12 +778,23 @@ const SND={ok:()=>tone([660,990],.2,'sine',.1,.2),bad:()=>tone([200,160],.28,'sq
 let VOICE=null;
 function pickVoice(){const vs=speechSynthesis.getVoices();VOICE=vs.find(v=>/en[-_]US/i.test(v.lang)&&/google/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}
 if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
-function hush(){try{speechSynthesis.cancel()}catch(e){}}
-function say(t,rate,pitch){return new Promise(res=>{if(!('speechSynthesis' in window))return res();try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';if(VOICE)u.voice=VOICE;u.rate=rate||S.rate;u.pitch=pitch||1;u.onend=res;u.onerror=res;speechSynthesis.speak(u)}catch(e){res()}})}
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+/* В APK (Capacitor WebView) браузерные голос и микрофон недоступны — используем плагины
+   @capacitor-community/text-to-speech и @capacitor-community/speech-recognition */
+const CAP=n=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins[n];
+const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const NTTS=()=>NATIVE&&CAP('TextToSpeech');
+function hush(){try{const t=NTTS();if(t)t.stop().catch(()=>{});else speechSynthesis.cancel()}catch(e){}}
+function say(t,rate,pitch){const nt=NTTS();if(nt)return nt.stop().catch(()=>{}).then(()=>nt.speak({text:String(t),lang:'en-US',rate:rate||S.rate,pitch:pitch||1,volume:1,category:'playback'})).catch(()=>{});return new Promise(res=>{if(!('speechSynthesis' in window))return res();try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';if(VOICE)u.voice=VOICE;u.rate=rate||S.rate;u.pitch=pitch||1;u.onend=res;u.onerror=res;speechSynthesis.speak(u)}catch(e){res()}})}
+const WSR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const SR=(NATIVE&&CAP('SpeechRecognition'))?'plugin':WSR;
 let REC=null;
-function stopRec(){if(REC)try{REC.abort()}catch(e){}}
-function listenOnce(){return new Promise((res,rej)=>{if(!SR)return rej('nosr');const r=new SR();REC=r;r.lang='en-US';r.interimResults=false;r.maxAlternatives=3;let got=false;r.onresult=e=>{got=true;res([...e.results[0]].map(a=>a.transcript))};r.onerror=e=>{if(!got)rej(e.error||'err')};r.onend=()=>{REC=null;if(!got)rej('nospeech')};try{r.start()}catch(e){rej('busy')}})}
+function stopRec(){if(SR==='plugin'){try{CAP('SpeechRecognition').stop().catch(()=>{})}catch(e){}return}if(REC)try{REC.abort()}catch(e){}}
+function listenOnce(){if(SR==='plugin'){const sp=CAP('SpeechRecognition');return (async()=>{
+let p=await sp.checkPermissions().catch(()=>({speechRecognition:'prompt'}));
+if(p.speechRecognition!=='granted'){p=await sp.requestPermissions().catch(()=>({}));if(p.speechRecognition!=='granted')throw 'not-allowed'}
+let r;try{r=await sp.start({language:'en-US',maxResults:3,partialResults:false,popup:false})}catch(e){throw 'nospeech'}
+const m=(r&&r.matches)||[];if(!m.length)throw 'nospeech';return m})()}
+return new Promise((res,rej)=>{if(!SR)return rej('nosr');const r=new SR();REC=r;r.lang='en-US';r.interimResults=false;r.maxAlternatives=3;let got=false;r.onresult=e=>{got=true;res([...e.results[0]].map(a=>a.transcript))};r.onerror=e=>{if(!got)rej(e.error||'err')};r.onend=()=>{REC=null;if(!got)rej('nospeech')};try{r.start()}catch(e){rej('busy')}})}
 
 /* ===================== PROGRESS ===================== */
 function ensureQuest(){const p=P(),t=today();if(p.quest.day!==t)p.quest={day:t,xp:0,lessons:0,calls:0,claimed:{}}}
@@ -673,7 +843,7 @@ function fmBack(){
 function topbar(o){return `<div class="fm-top"><button class="fm-back" aria-label="Назад" onclick="goBackUI()">←</button><div class="fm-ttl"><b>${esc(o.title)}</b>${o.sub?`<span>${esc(o.sub)}</span>`:''}</div>${o.cnt!=null?`<div class="fm-cnt" id="fmcnt">${esc(o.cnt)}</div>`:''}${o.right||''}${o.prog!=null?`<div class="fm-prog"><i id="fmprog" style="width:${o.prog}%"></i></div>`:''}</div>`}
 function show(view,html,top){VIEW=view;applyTheme();app.innerHTML=`<div class="phone">${top?topbar(top):''}${html}</div>`;window.scrollTo(0,0);if(!_inPop)syncHistory()}
 function render(){if(!S.current)return renderPick();if(VIEW==='settings')return renderSettings();renderHome()}
-function goHome(){hush();stopRec();L=null;C=null;renderHome();bgPull();scheduleReminders()}
+function goHome(){hush();stopRec();L=null;C=null;if(!S.current||!P())return renderPick();renderHome();bgPull();scheduleReminders()}
 function bgPull(force){if(!force&&Date.now()-SYNC.at<30000&&SYNC.ok!==null)return;pullFamily().then(ch=>{if((ch||force)&&(VIEW==='home'||VIEW==='pick'))(VIEW==='home'?renderHome:renderPick)()})}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)bgPull()});
 
@@ -682,16 +852,16 @@ function renderPick(){S.current=null;saveLocal();
 show('pick',`<div class="fm-brand">Fam<br>Lingo</div><p class="muted">Кто сегодня учится английскому?</p>`+
 Object.values(S.profiles).map(p=>{const t=TH(p.theme);return `<button class="fm-kid" style="--k:${t[0]};--kd:${t[1]}" onclick="pickProfile('${p.id}')"><div class="av">${p.avatar}</div><div><b>${esc(p.nameRu)}</b><span>⚡ ${p.xp} XP · 🔥 ${streakOf(p)} · уроков ${Object.keys(p.done).filter(k=>/l\d+$/.test(k)).length}</span></div></button>`}).join('')+
 `<button class="btn ghost" onclick="addProfile()">+ Добавить члена семьи</button>`)}
-function pickProfile(id){S.current=id;saveLocal();SELU=null;const p=P();if(!p.placed&&!p.xp&&!Object.keys(p.done).length)return renderLevel();goHome()}
+function pickProfile(id){S.current=id;saveLocal();SELU=null;const p=P();setTrack(p.track);if(TRACK==='kids'&&!p.placed){p.placed=true;save()}if(!p.placed&&!p.xp&&!Object.keys(p.done).length)return renderLevel();goHome()}
 function addProfile(){modal(`<div class="mtitle">Новый профиль</div><input class="field" id="pn" placeholder="Имя по-русски (Чингиз)"><input class="field" id="pe" placeholder="Имя латиницей (Chingiz)"><button class="btn" onclick="mkProfile()">Создать</button>`,true)}
 function mkProfile(){const ru=document.getElementById('pn').value.trim(),en=document.getElementById('pe').value.trim();if(!ru||!en)return toast('Заполните оба поля');
 let theme='teal',av='🧑';if(/чингиз|chingiz/i.test(ru+en)){theme='chingiz';av='⚽'}else if(/тамин|tamina/i.test(ru+en)){theme='tamina';av='🌸'}else if(Object.keys(S.profiles).length%2)theme='orange';
 const id=THEMES[theme]&&(theme==='chingiz'||theme==='tamina')&&!S.profiles[theme]?theme:'p'+Date.now();S.profiles[id]=newProfile(id,en,ru,av,theme);save();closeModal();renderPick()}
 
 /* ===================== HOME ===================== */
-const secLabel=u=>u<5?'1 · A1':u<10?'2 · A2':'3 · B1';
+const secLabel=u=>TRACK==='kids'?(u<5?'1 · A1':'2 · A2'):(u<5?'1 · A1':u<10?'2 · A2':'3 · B1');
 const OFF=[0,46,72,46,0,-46,-72,-46];
-function nodeLabel(n){return n.type==='lesson'?'Урок «'+n.lesson.title+'» · 12 заданий · +10 XP':n.type==='chest'?'Сундук с кристаллами 🎁':'Звонок Лекси 📞 · 2–3 минуты · +15 XP'}
+function nodeLabel(n){return n.type==='lesson'?'Урок «'+n.lesson.title+'» · '+(TRACK==='kids'?10:12)+' заданий · +10 XP':n.type==='chest'?'Сундук с кристаллами 🎁':'Звонок Лекси 📞 · 2–3 минуты · +15 XP'}
 function renderHome(){ensureQuest();const p=P(),ci=curIdx();
 if(SELU==null)SELU=ci<NODES.length?NODES[ci].unit:COURSE.length-1;
 const u=COURSE[SELU];const un=NODES.map((n,i)=>[n,i]).filter(x=>x[0].unit===SELU);const doneN=un.filter(x=>p.done[x[0].id]).length;
@@ -712,9 +882,9 @@ const nm=p.mistakes.length;
 h+=`<div class="fm-sec">Практика</div><div class="fm-rail">
 <button class="fm-sub fill" style="--sc:#F5B400;--scd:#C08900" onclick="startWeak()"><i>⚡</i>Слабое${dueList().length?' ('+dueList().length+')':''}</button>
 <button class="fm-sub fill" style="--sc:#F97316;--scd:#C2410C" onclick="startCall(-1)"><i>🦊</i>Разговор с Лекси</button>
-<button class="fm-sub fill" style="--sc:#F5B400;--scd:#C08900" onclick="renderRoles()"><i>🎭</i>Сценки</button>
+${TRACK==='kids'?'':`<button class="fm-sub fill" style="--sc:#F5B400;--scd:#C08900" onclick="renderRoles()"><i>🎭</i>Сценки</button>`}
 <button class="fm-sub fill" style="--sc:#14B8A6;--scd:#0D857A" onclick="renderMedia('story')"><i>📖</i>Истории</button>
-<button class="fm-sub fill" style="--sc:#334155;--scd:#1E293B" onclick="renderMedia('radio')"><i>📻</i>Радио</button>
+${TRACK==='kids'?'':`<button class="fm-sub fill" style="--sc:#334155;--scd:#1E293B" onclick="renderMedia('radio')"><i>📻</i>Радио</button>`}
 <button class="fm-sub fill" style="--sc:#2F6BFF;--scd:#1847C2" onclick="renderPractice()"><i>🏋️</i>Трени&shy;ровки</button>
 <button class="fm-sub fill" style="--sc:#E5484D;--scd:#BE123C" onclick="startMistakes()"><i>🩹</i>Ошибки${nm?' ('+nm+')':''}</button></div>`;
 h+=`<div class="fm-sec">Задания на сегодня</div><div class="card">${QUESTS.map(x=>{const v=Math.min(p.quest[x.k],x.g),full=v>=x.g,cl=p.quest.claimed[x.id];return `<div class="row qrow"><div style="font-size:30px">${x.ico}</div><div class="grow">${x.t}<div class="qbar"><i style="width:${100*v/x.g}%"></i></div><div class="small">${v} / ${x.g}</div></div><button class="chip acc" ${full&&!cl?'':'disabled'} onclick="claim('${x.id}')">${cl?'✓':'+10 💎'}</button></div>`}).join('')}
@@ -740,7 +910,7 @@ function claim(id){const p=P();if(p.quest.claimed[id])return;p.quest.claimed[id]
 function buyFreeze(){const p=P();if(p.gems<50||p.freezes>=2)return;p.gems-=50;p.freezes++;save();SND.ok();toast('🧊 Заморозка куплена');renderHome()}
 
 /* ===================== STORIES & RADIO ===================== */
-const CAST={lexi:['Лекси','🦊',1.2],anna:['Anna','👩',1.25],tom:['Tom','👨',0.8],max:['Max','🧔',0.9],kate:['Kate','👩‍🦰',1.15],chen:['Mr. Chen','🧑‍💼',0.95],n:['','📖',1]};
+const CAST={mia:['Mia','👧',1.4],ben:['Ben','👦',1.3],lexi:['Лекси','🦊',1.2],anna:['Anna','👩',1.25],tom:['Tom','👨',0.8],max:['Max','🧔',0.9],kate:['Kate','👩‍🦰',1.15],chen:['Mr. Chen','🧑‍💼',0.95],n:['','📖',1]};
 const STORIES=[
 {id:'s1',u:0,ico:'🏡',title:'Новый сосед',items:[
 ['n','Anna has a new neighbour.','У Анны новый сосед.'],
@@ -1060,12 +1230,12 @@ const RADIO=[
 ];
 function unitOpen(ui){const i=NODES.findIndex(n=>n.unit===ui);return i<=curIdx()||NODES.some(n=>n.unit===ui&&P().done[n.id])}
 function sayAs(who,t){const c=CAST[who]||CAST.n;return say(t,S.rate*0.95,c[2])}
-function renderMedia(kind){const p=P(),R=kind==='radio',list=R?RADIO:STORIES,done=R?p.radio:p.stories;
+function renderMedia(kind){const p=P(),R=kind==='radio',list=R?RADIO:(TRACK==='kids'?STORIES_KIDS:STORIES),done=R?p.radio:p.stories;
 show(R?'radios':'stories',`<div class="small" style="margin:0 2px 12px">${R?'Радио: только на слух, без текста. Ведущая Лекси и гость — после каждого фрагмента вопрос.':'Короткие истории с персонажами. Нажмите на реплику — увидите перевод и услышите её ещё раз.'}</div>`+
 list.map(x=>{const op=unitOpen(x.u),u=COURSE[x.u];return `<button class="rbtn" ${op?'':'style="opacity:.5"'} onclick="${op?(R?`startRadio('${x.id}')`:`startStory('${x.id}')`):`toast('Откроется в юните «${esc(u.title)}»')`}"><span class="ri">${op?(R?'📻':x.ico):'🔒'}</span><span class="grow"><b>${esc(x.title)}</b><span class="small">${u.icon} ${esc(u.title)}${R?' · '+x.segs.length+' фрагмента':''}</span></span><span class="rs">${done[x.id]?'✅':''}</span></button>`}).join(''),{title:R?'Радио Лекси':'Истории',sub:R?'Аудирование':'Чтение и понимание'})}
 /* --- story player --- */
 let ST=null;
-function startStory(id){const s=STORIES.find(x=>x.id===id);hush();ST={s,i:-1,wait:false,mist:0,start:Date.now()};
+function startStory(id){const s=STORIES.concat(STORIES_KIDS).find(x=>x.id===id);hush();ST={s,i:-1,wait:false,mist:0,start:Date.now()};
 show('story',`<div id="feed" class="feed"></div><div class="foot"><button class="btn" id="sbtn" onclick="storyNext()">Начать</button></div>`,{title:s.ico+' '+s.title,sub:'История',cnt:'0/'+s.items.length,prog:0});}
 function stProg(){const n=ST.s.items.length,k=Math.min(ST.i+1,n);const c=document.getElementById('fmcnt'),g=document.getElementById('fmprog');if(c)c.textContent=k+'/'+n;if(g)g.style.width=Math.round(100*k/n)+'%'}
 function stBtn(on,txt){const b=document.getElementById('sbtn');if(!b)return;b.disabled=!on;if(txt)b.textContent=txt}
@@ -1091,7 +1261,7 @@ if(!ST.msel||ST.msel.dataset.s===b.dataset.s){if(ST.msel)ST.msel.classList.remov
 const a=ST.msel;ST.msel=null;a.classList.remove('sel');
 if(a.dataset.k===b.dataset.k){[a,b].forEach(x=>{x.classList.add('ok');setTimeout(()=>x.classList.add('done'),350)});SND.pair();if(--ST.left===0){ST.wait=false;const sb=document.getElementById('sbtn');sb.disabled=false;sb.textContent='Завершить';sb.setAttribute('onclick','finishMedia()')}}
 else{ST.mist++;[a,b].forEach(x=>{x.classList.add('bad');setTimeout(()=>x.classList.remove('bad'),450)});SND.bad()}}
-function finishMedia(){const p=P(),R=ST.kind==='radio',id=ST.s.id,store=R?p.radio:p.stories,first=!store[id];store[id]=true;const xp=first?10:5;
+function finishMedia(){if(!ST)return;const p=P(),R=ST.kind==='radio',id=ST.s.id,store=R?p.radio:p.stories,first=!store[id];store[id]=true;const xp=first?10:5;
 const nd=addXP(xp);ensureQuest();p.quest.lessons++;save();SND.win();confetti();const mist=ST.mist,title=ST.s.title;ST=null;
 show('end',`<div class="center">${fox(140)}<div class="big2">${R?'Выпуск дослушан!':'История пройдена!'}</div><div class="stats"><div class="stat" style="--c:#F5B400"><div class="h">ВСЕГО XP</div><div class="v">⚡${xp}</div></div><div class="stat" style="--c:var(--ok)"><div class="h">ОШИБКИ</div><div class="v">${mist}</div></div></div></div><div class="foot"><button class="btn" onclick="${nd?'streakScreen()':`renderMedia('${R?'radio':'story'}')`}">Продолжить</button></div>`,{title:R?'Радио Лекси':'Истории',sub:title})}
 /* --- radio player --- */
@@ -1128,7 +1298,7 @@ if(list.length)await ln.schedule({notifications:list})}catch(e){}}
 
 /* ===================== PLACEMENT ===================== */
 function renderLevel(){const p=P();
-const O=[['🌱','С нуля','Начать с первого урока: приветствия, знакомство','placeStart(0)','#58CC02','#58A700'],['📗','Знаю основы','Тест с начала курса — подберём юнит. ~5 минут','startPlacement(0)','#1CB0F6','#1899D6'],['📘','Понимаю многое, говорю слабо','Тест с раздела 2 (A2) — пропустим лишнее','startPlacement(4)','#8B5CF6','#6532D8'],['📙','Читаю свободно, говорю с трудом','Тест с раздела 3 (B1)','startPlacement(10)','#0F766E','#134E4A']];
+const O=[['🌿','Начать с A2','С раздела 2: повседневные темы, Past Simple, планы. A1 пропускаем','placeStart(5)','#58CC02','#58A700'],['📘','Тест уровня с A2','Проверим знания и начнём с нужного юнита. ~5 минут','startPlacement(5)','#8B5CF6','#6532D8'],['📙','Тест уровня с B1','Если читаете свободно, но говорите с трудом','startPlacement(10)','#0F766E','#134E4A']];
 show('level',`<div class="center" style="padding-bottom:6px">${fox(110)}<div class="big2" style="margin:8px 0 6px">С чего начнём, ${esc(p.nameRu)}?</div><div class="small" style="margin-bottom:16px">Выберите, как хорошо вы знаете английский. Тест подберёт уровень, чтобы не учить то, что вы уже знаете.</div></div>`+
 O.map(o=>`<button class="fm-kid" style="--k:${o[4]};--kd:${o[5]}" onclick="${o[3]}"><div class="av">${o[0]}</div><div><b style="font-size:17px">${o[1]}</b><span>${o[2]}</span></div></button>`).join(''),{title:'Ваш уровень',sub:p.nameRu})}
 function placeStart(u){const p=P();p.placed=true;if(u>0)NODES.forEach(n=>{if(n.unit<u)p.done[n.id]=true});SELU=u;save();goHome()}
@@ -1149,7 +1319,7 @@ function renderSettings(){const p=P();show('settings',`
 <div class="card"><div class="row"><div class="grow">Напоминания<div class="small">${LN()?'Каждый день, если урока ещё не было, + «серия сгорит» в 22:30':'Заработают в APK-версии приложения'}</div></div><button class="chip acc" onclick="S.remind=S.remind===false;saveLocal();scheduleReminders();renderSettings()">${S.remind===false?'Выкл':'Вкл'}</button></div><div class="row" style="margin-top:8px"><div class="grow small">Время напоминания</div><input class="field" type="time" style="width:130px;margin:0" value="${S.remindAt||'20:00'}" onchange="S.remindAt=this.value;saveLocal();scheduleReminders()"></div></div>
 <div class="card"><div class="row"><div class="grow">Звуки</div><button class="chip acc" onclick="S.sound=!S.sound;saveLocal();renderSettings()">${S.sound?'Вкл':'Выкл'}</button></div></div>
 <div class="card"><div class="row"><div class="grow">Распознавание речи<div class="small">${SR?'Доступно':'Недоступно — откройте в Chrome'}</div></div></div></div>
-<div class="card"><div class="row"><div class="grow">Тест уровня<div class="small">Подберёт юнит по вашим знаниям. Пройденные уроки не сотрутся.</div></div><button class="chip acc" onclick="startPlacement(0)">Пройти</button></div></div>
+${TRACK==="kids"?"":`<div class="card"><div class="row"><div class="grow">Тест уровня<div class="small">Подберёт юнит по вашим знаниям. Пройденные уроки не сотрутся.</div></div><button class="chip acc" onclick="startPlacement(5)">Пройти</button></div></div>`}
 <button class="link" style="color:var(--bad)" onclick="resetMe()">Сбросить прогресс профиля</button>`,{title:'Настройки',sub:p.nameRu})}
 function saveKey(){S.key=document.getElementById('key').value.trim();S.model=document.getElementById('model').value.trim()||'gemini-3.8-flash';saveLocal();SND.ok();toast('Сохранено')}
 function resetMe(){modal(`<div class="mtitle">Сбросить весь прогресс ${esc(P().nameRu)}?</div><button class="btn bad" onclick="const p=P();S.profiles[p.id]=newProfile(p.id,p.name,p.nameRu,p.avatar,p.theme);save();closeModal();renderSettings()">Сбросить</button><button class="link" onclick="closeModal()">Отмена</button>`,true)}
@@ -1181,9 +1351,9 @@ function buildLesson(lesson){const ph=lesson.phrases.map(p=>[tx(p[0]),tx(p[1])])
 const wi=shuffle([...W.keys()]),pi=shuffle([...ph.keys()]);
 const pic=j=>{const ans=W[wi[j]];const opts=shuffle([ans].concat(shuffle(W.filter(w=>w!==ans)).slice(0,3)));return {type:'pic',prompt:ans[1],answer:ans[0],options:opts}};
 const B=j=>mkBuild('build',ph[pi[j]][0],ph[pi[j]][1],pool),Ls=j=>mkBuild('listen',ph[pi[j]][0],ph[pi[j]][1],pool),Sp=j=>({type:'speak',text:ph[pi[j]][0],ru:ph[pi[j]][1]});
-const items=[pic(0),B(0),Ls(2),pic(1),B(1),{type:'match',pairs:shuffle(W).slice(0,5)},Sp(0),B(3),Ls(4),B(5),Sp(3),Ls(6)];
+const items=TRACK==='kids'?[pic(0),pic(1),B(0),{type:'match',pairs:shuffle(W).slice(0,5)},pic(2),Ls(1),pic(3),B(2),Sp(3),Ls(4)]:[pic(0),B(0),Ls(2),pic(1),B(1),{type:'match',pairs:shuffle(W).slice(0,5)},Sp(0),B(3),Ls(4),B(5),Sp(3),Ls(6)];
 const own=new Set(ph.map(p=>p[0])),rp=learnedLessons().flatMap(l=>l.phrases.flatMap(x=>words(tx(x[0]))));
-dueList().filter(x=>!x.w&&!own.has(x.en)).slice(0,2).forEach((x,i)=>items.splice(i?11:7,1,reviewItem(x,rp,i?'listen':'build')));return items}
+dueList().filter(x=>!x.w&&!own.has(x.en)).slice(0,2).forEach((x,i)=>items.splice(i?items.length-1:7,1,reviewItem(x,rp,i?'listen':'build')));return items}
 function buildMistakes(){const p=P();const m=shuffle(p.mistakes).slice(0,8);const pool=COURSE.flatMap(u=>u.lessons.flatMap(l=>l.phrases.flatMap(x=>words(tx(x[0])))));
 const items=m.map((x,i)=>Object.assign(mkBuild(i%2?'listen':'build',x[0],x[1],pool),{fromMistake:true}));if(m.length)items.push({type:'speak',text:m[0][0],ru:m[0][1],fromMistake:true});return items}
 
@@ -1224,7 +1394,7 @@ document.getElementById('heard').innerHTML='<div class="hw">'+tw.map(w=>'<span c
 if(best[1]>=0.85)showResult({ok:true,answer:e.text,user:best[0]});else{L.speakFails++;if(L.speakFails>=3)showResult({ok:false,answer:e.text,soft:true,user:best[0]});else{m.querySelector('span').textContent='Повторите — красные слова не разобраны';SND.bad();setTimeout(()=>say(miss.join(', '),0.7),450)}}}
 catch(err){if(!document.getElementById('mic'))return;m.classList.remove('rec');m.querySelector('span').textContent=err==='not-allowed'?'Нет доступа к микрофону':'Не расслышала — ещё раз'}}
 function skipSpeak(){L.noSpeak=true;L.correct++;nextEx()}
-function doCheck(){if(!L.check||L.answered)return;showResult(L.check())}
+function doCheck(){if(!L||L.finished||!L.check||L.answered)return;showResult(L.check())}
 const PRAISE=['Отлично!','Великолепно!','Так держать!','Супер!','Верно!','Прекрасно!'];
 function showResult(r){if(L.answered)return;L.answered=true;L.lastR=r;const e=L.items[L.idx];if(e.type!=='match'&&L.mode!=='place')memUpdate(e,r.ok);
 if(r.ok){L.correct++;L.combo++;L.maxCombo=Math.max(L.maxCombo,L.combo);SND.ok();if(e.fromMistake){const p=P();p.mistakes=p.mistakes.filter(m=>m[0]!==(e.answer||e.text))}
@@ -1233,15 +1403,15 @@ else{L.wrong++;L.combo=0;SND.bad();if(!r.soft||e.type==='speak')recordMistake(e)
 updateBar();setReady(false,false);
 document.getElementById('sheet').innerHTML=`<div class="sheet ${r.ok?'ok':'bad'}"><div class="s-head">${r.ok?'✔ '+PRAISE[rnd(0,PRAISE.length-1)]:'✖ Неправильно'}</div>${!r.ok&&r.answer?`<div class="s-lbl">Правильный ответ:</div><div class="s-ans">${esc(r.answer)}</div>`:r.ok&&e.type==='build'?`<div class="s-ans">${esc(e.answer)}</div>`:''}${!r.ok&&r.answer&&e.type!=='match'?'<div class="why" id="why"></div><button class="chip why-b" onclick="explain()">🤔 Почему так?</button>':''}${L.maxWrong!=null&&!r.ok?'<div class="s-lbl" style="margin-bottom:10px">Ошибок: '+L.wrong+' из '+L.maxWrong+' допустимых</div>':''}<button class="btn ${r.ok?'ok':'bad'}" onclick="nextEx()">Продолжить</button></div>`;
 if(!r.ok&&r.answer)say(r.answer)}
-function nextEx(){stopRec();if(L.mode==='place'){const e=L.items[L.idx];if(L.lastR&&!L.lastR.ok){L.uerr[e.u]=(L.uerr[e.u]||0)+1;if(L.uerr[e.u]>=2)return finishPlacement(e.u)}if(L.idx+1>=L.items.length)return finishPlacement(null)}if(L.maxWrong!=null&&L.wrong>L.maxWrong)return failTest();L.idx++;if(L.idx>=L.items.length)return finishLesson();renderEx()}
+function nextEx(){if(!L||L.finished)return;stopRec();if(L.mode==='place'){const e=L.items[L.idx];if(L.lastR&&!L.lastR.ok){L.uerr[e.u]=(L.uerr[e.u]||0)+1;if(L.uerr[e.u]>=2)return finishPlacement(e.u)}if(L.idx+1>=L.items.length)return finishPlacement(null)}if(L.maxWrong!=null&&L.wrong>L.maxWrong)return failTest();L.idx++;if(L.idx>=L.items.length)return finishLesson();renderEx()}
 function finishLesson(){const p=P();L.finished=true;const acc=Math.round(100*L.total/(L.total+L.wrong));const secs=Math.round((Date.now()-L.start)/1000);
 let xp={replay:5,practice:5,legend:40,jump:20}[L.mode]||10;if(L.mode==='new'&&L.wrong===0)xp+=5;const nd=addXP(xp);ensureQuest();
 if(L.node&&L.mode==='new')p.done[L.node.id]=true;if(L.mode==='legend')p.legend[COURSE[L.unit].id]=true;if(L.mode==='jump'){NODES.forEach(n=>{if(n.unit<L.unit)p.done[n.id]=true});SELU=L.unit}if(L.mode!=='mistakes')p.quest.lessons++;save();
 SND.win();confetti();
 show('end',`<div class="center">${fox(140)}<div class="big2">${L.mode==='legend'?'👑 Юнит легендарный!':L.mode==='jump'?'⏩ Юнит открыт!':L.wrong===0?'Идеальный урок!':'Урок пройден!'}</div><div class="stats"><div class="stat" style="--c:#F5B400"><div class="h">ВСЕГО XP</div><div class="v">⚡${xp}</div></div><div class="stat" style="--c:var(--ok)"><div class="h">ТОЧНОСТЬ</div><div class="v">${acc}%</div></div><div class="stat" style="--c:var(--acc)"><div class="h">ВРЕМЯ</div><div class="v">${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}</div></div></div>${L.maxCombo>=5?`<div class="small" style="margin-top:16px">🔥 Лучшая серия: ${L.maxCombo} ответов подряд</div>`:''}</div><div class="foot"><button class="btn" onclick="${nd?'streakScreen()':'goHome()'}">Продолжить</button></div>`,{title:'Итог урока',sub:L.title})}
 function streakScreen(){const p=P();SND.chest();show('streak',`<div class="center"><div class="flame">🔥</div><div class="streaknum">${p.streak}</div><div class="big2" style="color:#F97316;margin:8px 0 14px">${plural(p.streak,'день','дня','дней')} подряд!</div><div class="small">${p.streak===1?'Начало положено. Возвращайтесь завтра, чтобы не прервать серию.':'Не прерывайте серию — занимайтесь каждый день.'}${p.freezes?' Заморозок в запасе: '+p.freezes+'.':''}</div></div><div class="foot"><button class="btn" onclick="goHome()">Продолжить</button></div>`,{title:'Серия дней',sub:p.nameRu})}
-function openChest(n){const g=rnd(10,30);modal(`<div class="chest shake" id="ch">🎁</div><div id="cr" class="mtitle" style="min-height:30px"></div><button class="btn" id="cb" onclick="closeModal();renderHome()" style="visibility:hidden">Забрать</button>`,true);
-setTimeout(()=>{const p=P();p.done[n.id]=true;p.gems+=g;save();SND.chest();confetti();const ch=document.getElementById('ch');if(!ch)return renderHome();ch.textContent='💎';document.getElementById('cr').textContent='+'+g+' кристаллов!';document.getElementById('cb').style.visibility='visible'},1100)}
+function openChest(n){if(P().done[n.id]||window.__chest)return;window.__chest=1;const g=rnd(10,30);modal(`<div class="chest shake" id="ch">🎁</div><div id="cr" class="mtitle" style="min-height:30px"></div><button class="btn" id="cb" onclick="closeModal();renderHome()" style="visibility:hidden">Забрать</button>`,true);
+setTimeout(()=>{window.__chest=0;const p=P();if(p.done[n.id])return;p.done[n.id]=true;p.gems+=g;save();SND.chest();confetti();const ch=document.getElementById('ch');if(!ch)return renderHome();ch.textContent='💎';document.getElementById('cr').textContent='+'+g+' кристаллов!';document.getElementById('cb').style.visibility='visible'},1100)}
 
 /* ===================== AI CALL ===================== */
 let C=null,CALLDONE=true;
@@ -1251,8 +1421,11 @@ if(/2\.5-flash/.test(S.model))body.generationConfig.thinkingConfig={thinkingBudg
 const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(S.model)+':generateContent?key='+encodeURIComponent(S.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error((j.error&&j.error.message)||('HTTP '+r.status));
 const t=((j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[]).filter(p=>!p.thought).map(p=>p.text||'').join('').trim();if(!t)throw new Error('Пустой ответ модели');return t}
+function learnerDesc(p){if(p.track==='kids')return `The learner is ${p.name}, a 9-year-old girl from Almaty (native Russian speaker) who loves swimming, Roblox, chess and drawing. Level A1. IMPORTANT: speak VERY simply — one short sentence, maximum 12 words, easy words only, playful, warm and encouraging like a kind friend; praise her answers. Never ask for personal details (address, school name, phone, photos). Keep everything safe and age-appropriate.`;
+if(p.id==='chingiz'||p.nameRu==='Чингиз')return `The learner is ${p.name}, a 13-year-old boy from Almaty (native Russian speaker) who loves football, Fortnite, Roblox and chess. Level A2–B1: can express simple thoughts and is learning to speak more freely. Be friendly and casual like a cool older friend; bring in his interests when natural. Never ask for personal details (address, school name, phone, photos). Keep everything age-appropriate.`;
+return `The learner is ${p.name}, an adult from Almaty, Kazakhstan, native Russian speaker, level A2: reads and understands basic English but is learning to SPEAK.`}
 function callSystem(){const p=P();const recent=p.calls.slice(-2).map(c=>c.fb).join('\n');
-return `You are Lexi, a warm, cheerful English conversation partner (a friendly fox character) in a private family language-learning app. The learner is ${p.name}, from Almaty, Kazakhstan, native Russian speaker, level A2: reads and understands basic English but is learning to SPEAK.
+return `You are Lexi, a warm, cheerful English conversation partner (a friendly fox character) in a private family language-learning app. ${learnerDesc(p)}
 Scenario: ${C.topic}
 Rules: speak only English. Reply in 1-2 short sentences, maximum 25 words. Use simple everyday words. Always end with one simple question so the learner keeps talking. Never point out mistakes during the conversation; instead naturally repeat the correct form in your reply. If the learner uses Russian or seems stuck, give a very short simple English hint of what they could say. This text will be read aloud: no emojis, no lists, no markdown.`+(recent?`\nRecent feedback for this learner (gently give chances to practise these points):\n${recent}`:'')}
 function startCall(i){const n=i>=0?NODES[i]:null;startConv({kind:'call',node:n,topic:n?n.topic:'Free conversation about everyday life: family, work, hobbies, plans, travel. Let the learner choose the topic.',title:'Звонок Лекси',sub:n?COURSE[n.unit].title:'Свободный разговор',repeat:!!(n&&P().done[n.id])})}
@@ -1282,7 +1455,7 @@ show('callend',`<div class="center">${fox(110)}<div class="big2" style="color:#F
 const learner=c.history.filter((m,i)=>m.role==='user'&&i>0).map(m=>'- '+m.text).join('\n');
 const ask=role?`Сценка: «${c.role.title}». Цели ученика: ${c.role.goals.join('; ')}.\nФразы ученика:\n${learner}\n\nОтветь строго в таком виде:\nЗВЁЗДЫ: N\n(N от 1 до 3: 3 — все цели достигнуты почти без ошибок, 2 — большинство целей, 1 — мало.)\nЗатем по строке на каждую цель: «✅ цель» или «❌ цель».\nЗатем до 3 главных ошибок в формате «❌ как сказал → ✅ как правильно — кратко почему». Без вступлений, до 120 слов.`
 :`Фразы ученика из разговора на английском:\n${learner}\n\nДай короткий разбор: 1 строка похвалы, затем до 3 главных ошибок строго в формате «❌ как сказал → ✅ как правильно — кратко почему». Если ошибок нет, скажи это и предложи одну фразу посложнее для следующего раза. Без вступлений, до 90 слов.`;
-let fb='',okfb=true;try{fb=await gemini('You are a kind, precise English teacher for an adult Russian-speaking learner (A2). Answer in Russian.',[{role:'user',text:ask}],2048)}catch(e){fb='Разбор не получился: '+e.message;okfb=false}
+let fb='',okfb=true;try{fb=await gemini(P().track==='kids'?'You are a kind English teacher for a 9-year-old Russian-speaking girl. Answer in Russian, very simply and warmly, as for a child.':'You are a kind, precise English teacher for a Russian-speaking learner (A2–B1). Answer in Russian.',[{role:'user',text:ask}],2048)}catch(e){fb='Разбор не получился: '+e.message;okfb=false}
 let stars=0;if(role&&okfb){const mm=fb.match(/ЗВ[ЁЕ]ЗДЫ\s*:\s*(\d)/i);stars=mm?Math.max(1,Math.min(3,+mm[1])):1;fb=fb.replace(/^.*ЗВ[ЁЕ]ЗДЫ.*(\n|$)/im,'').replace(/^\(N от.*(\n|$)/im,'').trim()}
 const p=P();if(okfb){p.calls.push({d:today(),fb:fb.slice(0,400)});if(p.calls.length>5)p.calls.shift()}
 const xp=role?10+5*stars:c.repeat?5:15;if(role)p.roles[c.role.id]=Math.max(p.roles[c.role.id]||0,stars);
@@ -1293,7 +1466,7 @@ document.getElementById('fb').textContent=fb+`\n\n⚡ +${xp} XP`;const b=documen
 
 /* ===================== STAGE 1: GUIDE / PRACTICE / TESTS / ROLEPLAY / WHY ===================== */
 function exRow(x){const en=tx(x[0]),ru=tx(x[1]);return `<div class="exr"><button class="spk-s" data-t="${esc(en)}" onclick="say(this.dataset.t)">🔊</button><div><b>${esc(en)}</b><div class="small">${esc(ru)}</div></div></div>`}
-function renderGuide(ui){const u=COURSE[ui],g=GUIDES[u.id];
+function renderGuide(ui){const u=COURSE[ui],g=GUIDES[u.id]||GUIDES_KIDS[u.id];
 show('guide',`<div class="fm-today" style="--sc:${u.color};--scd:${u.dark}"><div class="lbl">📖 Путеводитель · юнит ${ui+1}</div><div class="big" style="font-size:28px">${u.icon} ${esc(u.title)}</div><div class="comp" style="margin-bottom:0">Короткие правила и ключевые фразы. Нажмите 🔊, чтобы послушать.</div></div>`+
 g.rules.map((r,k)=>`<div class="card"><div class="rnum" style="--c:${u.color}">${k+1}</div><h2 class="rt">${esc(r.t)}</h2><div class="rx">${esc(r.x)}</div>${r.ex.map(exRow).join('')}</div>`).join('')+
 `<div class="fm-sec">Ключевые фразы</div><div class="card">${g.phrases.map(exRow).join('')}</div><button class="btn" onclick="goHome()">Понятно</button>`,{title:'Правила юнита',sub:u.title})}
@@ -1302,7 +1475,7 @@ function learnedLessons(){const p=P();const ls=COURSE.flatMap(u=>u.lessons).filt
 function uniqWords(ls){const seenE=new Set(),seenR=new Set();return shuffle(ls.flatMap(l=>l.words)).filter(w=>{if(seenE.has(w[0])||seenR.has(w[1]))return false;seenE.add(w[0]);seenR.add(w[1]);return true})}
 function renderPractice(){const n=P().mistakes.length;
 const T=[['startWeak()','⚡','Слабое',dueList().length?dueList().length+' к повтору':'по вашим ошибкам','#F59E0B','#B45309'],["startPractice('speak')",'🗣️','Говорение','8 фраз вслух','#2F6BFF','#1847C2'],["startPractice('listen')",'🎧','Аудирование','8 фраз на слух','#8B5CF6','#6532D8'],["startPractice('words')",'🔤','Слова','Картинки и пары','#00A88F','#007F6C'],['startMistakes()','🩹','Ошибки',n?n+' фраз':'пока нет','#E5484D','#BE123C'],['startCall(-1)','🦊','Лекси','Разговор голосом','#F97316','#C2410C'],['renderRoles()','🎭','Сценки','Ролевые диалоги','#F5B400','#C08900'],["renderMedia('story')",'📖','Истории','Диалоги с вопросами','#14B8A6','#0D857A'],["renderMedia('radio')",'📻','Радио','Только на слух','#334155','#1E293B']];
-show('practice',`<div class="small" style="margin:0 2px 12px">Тренировки по пройденным урокам — без нового материала. +5 XP за каждую.</div><div class="pgrid">${T.map(t=>`<button class="ptile" style="--sc:${t[4]};--scd:${t[5]}" onclick="${t[0]}"><i>${t[1]}</i><b>${t[2]}</b><span>${t[3]}</span></button>`).join('')}</div>`,{title:'Практика',sub:'Тренировки'})}
+show('practice',`<div class="small" style="margin:0 2px 12px">Тренировки по пройденным урокам — без нового материала. +5 XP за каждую.</div><div class="pgrid">${T.filter(t=>TRACK!=='kids'||!/renderRoles|radio/.test(t[0])).map(t=>`<button class="ptile" style="--sc:${t[4]};--scd:${t[5]}" onclick="${t[0]}"><i>${t[1]}</i><b>${t[2]}</b><span>${t[3]}</span></button>`).join('')}</div>`,{title:'Практика',sub:'Тренировки'})}
 function startPractice(kind){const ls=learnedLessons();const ph=shuffle(ls.flatMap(l=>l.phrases.map(p=>[tx(p[0]),tx(p[1])])));const W=uniqWords(ls);const pool=ph.flatMap(p=>words(p[0]));let items=[];
 if(kind==='speak')items=ph.slice(0,8).map(p=>({type:'speak',text:p[0],ru:p[1]}));
 else if(kind==='listen')items=ph.slice(0,8).map(p=>mkBuild('listen',p[0],p[1],pool));
