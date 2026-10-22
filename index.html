@@ -465,7 +465,7 @@ function listenOnce(){return new Promise((res,rej)=>{if(!SR)return rej('nosr');c
 function ensureQuest(){const p=P(),t=today();if(p.quest.day!==t)p.quest={day:t,xp:0,lessons:0,calls:0,claimed:{}}}
 function streakOf(p){if(!p.lastDay)return 0;const d=dayDiff(p.lastDay,today());if(d<=1)return p.streak;if(d===2&&p.freezes>0)return p.streak;return 0}
 function touchDay(){const p=P(),t=today();if(p.lastDay===t)return false;const d=p.lastDay?dayDiff(p.lastDay,t):99;if(d===1)p.streak++;else if(d===2&&p.freezes>0){p.freezes--;p.streak++}else p.streak=1;p.best=Math.max(p.best,p.streak);p.lastDay=t;p.days=(p.days||[]).concat(t).slice(-400);return true}
-function addXP(n){ensureQuest();const nd=touchDay();const p=P();p.xp+=n;p.quest.xp+=n;const wk=weekKey();if(!p.week||p.week.key!==wk)p.week={key:wk,xp:0};p.week.xp+=n;save();return nd}
+function addXP(n){ensureQuest();const nd=touchDay();const p=P();p.xp+=n;p.quest.xp+=n;const wk=weekKey();if(!p.week||p.week.key!==wk)p.week={key:wk,xp:0};p.week.xp+=n;save();scheduleReminders();return nd}
 function curIdx(){const p=P();const i=NODES.findIndex(n=>!p.done[n.id]);return i<0?NODES.length:i}
 function recordMistake(e){const en=e.answer||e.text,ru=e.ru||e.prompt;if(!en||!ru)return;const p=P();if(!p.mistakes.some(m=>m[0]===en)){p.mistakes.push([en,ru]);if(p.mistakes.length>30)p.mistakes.shift()}}
 
@@ -508,7 +508,7 @@ function fmBack(){
 function topbar(o){return `<div class="fm-top"><button class="fm-back" aria-label="Назад" onclick="goBackUI()">←</button><div class="fm-ttl"><b>${esc(o.title)}</b>${o.sub?`<span>${esc(o.sub)}</span>`:''}</div>${o.cnt!=null?`<div class="fm-cnt" id="fmcnt">${esc(o.cnt)}</div>`:''}${o.right||''}${o.prog!=null?`<div class="fm-prog"><i id="fmprog" style="width:${o.prog}%"></i></div>`:''}</div>`}
 function show(view,html,top){VIEW=view;applyTheme();app.innerHTML=`<div class="phone">${top?topbar(top):''}${html}</div>`;window.scrollTo(0,0);if(!_inPop)syncHistory()}
 function render(){if(!S.current)return renderPick();if(VIEW==='settings')return renderSettings();renderHome()}
-function goHome(){hush();stopRec();L=null;C=null;renderHome();bgPull()}
+function goHome(){hush();stopRec();L=null;C=null;renderHome();bgPull();scheduleReminders()}
 function bgPull(force){if(!force&&Date.now()-SYNC.at<30000&&SYNC.ok!==null)return;pullFamily().then(ch=>{if((ch||force)&&(VIEW==='home'||VIEW==='pick'))(VIEW==='home'?renderHome:renderPick)()})}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)bgPull()});
 
@@ -570,6 +570,19 @@ function claimFQ(){const p=P(),wk=weekKey();if(p.fq===wk)return;p.fq=wk;p.gems+=
 function claim(id){const p=P();if(p.quest.claimed[id])return;p.quest.claimed[id]=true;p.gems+=10;save();SND.chest();toast('+10 💎');renderHome()}
 function buyFreeze(){const p=P();if(p.gems<50||p.freezes>=2)return;p.gems-=50;p.freezes++;save();SND.ok();toast('🧊 Заморозка куплена');renderHome()}
 
+/* ===================== REMINDERS (работают в APK: @capacitor/local-notifications) ===================== */
+const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
+const RTEXT=['🦊 Лекси ждёт! 5 минут английского сегодня.','💬 Сегодня ещё не говорили по-английски. Один короткий урок?','🎯 Задания дня ждут — заберите кристаллы!'];
+const RIDS=[1,2,3,4,5].map(id=>({id}));
+async function scheduleReminders(){const ln=LN();if(!ln||!S.current)return;
+try{await ln.cancel({notifications:RIDS});if(S.remind===false)return;
+let perm=await ln.checkPermissions();if(perm.display!=='granted')perm=await ln.requestPermissions();if(perm.display!=='granted')return;
+const p=P(),hm=(S.remindAt||'20:00').split(':').map(Number),now=new Date(),done=p.lastDay===today(),st=streakOf(p),list=[];
+for(let d=0;d<3;d++){const t=new Date();t.setDate(t.getDate()+d);t.setHours(hm[0],hm[1],0,0);
+ if(!(d===0&&(done||t<=now)))list.push({id:1+d,title:'FamLingo · '+p.nameRu,body:RTEXT[d]+(st&&d<2?' Серия: 🔥'+st:''),schedule:{at:t,allowWhileIdle:true}});
+ if(st>0&&d<2&&!(d===0&&done)){const w=new Date(t);w.setHours(22,30,0,0);if(w>now&&w>t)list.push({id:4+d,title:'🔥 Серия сгорит в полночь!',body:'Остался один короткий урок, чтобы сохранить '+st+' '+plural(st,'день','дня','дней')+' серии.',schedule:{at:w,allowWhileIdle:true}})}}
+if(list.length)await ln.schedule({notifications:list})}catch(e){}}
+
 /* ===================== PLACEMENT ===================== */
 function renderLevel(){const p=P();
 const O=[['🌱','С нуля','Начать с первого урока: приветствия, знакомство','placeStart(0)','#58CC02','#58A700'],['📗','Знаю основы','Тест с начала курса — подберём юнит. ~5 минут','startPlacement(0)','#1CB0F6','#1899D6'],['📘','Понимаю многое, говорю слабо','Тест с раздела 2 (A2) — пропустим лишнее','startPlacement(4)','#8B5CF6','#6532D8']];
@@ -590,6 +603,7 @@ function renderSettings(){const p=P();show('settings',`
 <div class="card">Ключ Gemini API (для разговора с Лекси)<input class="field" id="key" type="password" placeholder="Вставьте ключ" value="${esc(S.key)}"><div class="small">Бесплатно: aistudio.google.com → Get API key. Ключ хранится только на этом телефоне.</div>
 <div style="margin-top:12px">Модель<input class="field" id="model" value="${esc(S.model)}"></div><button class="btn" style="margin-top:8px" onclick="saveKey()">Сохранить</button></div>
 <div class="card">Скорость речи: <span id="rv">${S.rate}</span><input type="range" min="0.6" max="1.2" step="0.05" value="${S.rate}" style="width:100%;accent-color:var(--acc)" oninput="S.rate=+this.value;document.getElementById('rv').textContent=this.value;saveLocal()"><button class="chip" style="margin-top:8px" onclick="say('Hello! Nice to meet you.')">🔊 Проверить голос</button></div>
+<div class="card"><div class="row"><div class="grow">Напоминания<div class="small">${LN()?'Каждый день, если урока ещё не было, + «серия сгорит» в 22:30':'Заработают в APK-версии приложения'}</div></div><button class="chip acc" onclick="S.remind=S.remind===false;saveLocal();scheduleReminders();renderSettings()">${S.remind===false?'Выкл':'Вкл'}</button></div><div class="row" style="margin-top:8px"><div class="grow small">Время напоминания</div><input class="field" type="time" style="width:130px;margin:0" value="${S.remindAt||'20:00'}" onchange="S.remindAt=this.value;saveLocal();scheduleReminders()"></div></div>
 <div class="card"><div class="row"><div class="grow">Звуки</div><button class="chip acc" onclick="S.sound=!S.sound;saveLocal();renderSettings()">${S.sound?'Вкл':'Выкл'}</button></div></div>
 <div class="card"><div class="row"><div class="grow">Распознавание речи<div class="small">${SR?'Доступно':'Недоступно — откройте в Chrome'}</div></div></div></div>
 <div class="card"><div class="row"><div class="grow">Тест уровня<div class="small">Подберёт юнит по вашим знаниям. Пройденные уроки не сотрутся.</div></div><button class="chip acc" onclick="startPlacement(0)">Пройти</button></div></div>
