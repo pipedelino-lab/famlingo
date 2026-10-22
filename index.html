@@ -236,6 +236,7 @@ h1,h2,.uf{font-family:Unbounded,Nunito,system-ui,sans-serif;font-weight:800;lett
 .rg{width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:40px}
 .rg.talk,.ring.talk{animation:talk 1s infinite}
 .rbtns{display:flex;gap:10px;align-items:center}.rbtns .btn{flex:1;margin:0}
+.revtag{display:inline-block;background:var(--tint);color:var(--acc);font-weight:900;font-size:13px;border-radius:10px;padding:4px 10px;margin-bottom:4px}
 @media (prefers-reduced-motion:reduce){.fm-conf{display:none}.bub{animation:none}}
 </style>
 </head>
@@ -419,7 +420,7 @@ function save(){if(S.current&&S.profiles[S.current]){S.profiles[S.current].updat
 /* ---------- family sync (Firebase RTDB, branch famlingo) ---------- */
 const FB='https://familymath-4371e-default-rtdb.firebaseio.com/famlingo/v1';
 let pushT=null,SYNC={ok:null,at:0,pulling:false};
-function normProfile(p){p.done=p.done||{};p.mistakes=p.mistakes||[];p.calls=p.calls||[];p.legend=p.legend||{};p.roles=p.roles||{};p.days=p.days||[];p.quest=p.quest||{day:null,xp:0,lessons:0,calls:0,claimed:{}};p.quest.claimed=p.quest.claimed||{};p.week=p.week||{key:'',xp:0};p.stories=p.stories||{};p.radio=p.radio||{};p.theme=p.theme||(THEMES[p.id]?p.id:'teal');['xp','gems','streak','best','freezes'].forEach(k=>p[k]=p[k]||0);return p}
+function normProfile(p){p.done=p.done||{};p.mistakes=p.mistakes||[];p.calls=p.calls||[];p.legend=p.legend||{};p.roles=p.roles||{};p.days=p.days||[];p.quest=p.quest||{day:null,xp:0,lessons:0,calls:0,claimed:{}};p.quest.claimed=p.quest.claimed||{};p.week=p.week||{key:'',xp:0};p.stories=p.stories||{};p.mem=p.mem||{};p.radio=p.radio||{};p.theme=p.theme||(THEMES[p.id]?p.id:'teal');['xp','gems','streak','best','freezes'].forEach(k=>p[k]=p[k]||0);return p}
 function pushProfile(){const p=S.profiles[S.current];if(!p)return;clearTimeout(pushT);pushT=setTimeout(()=>{fetch(FB+'/profiles/'+encodeURIComponent(p.id)+'.json',{method:'PUT',body:JSON.stringify(p)}).then(r=>{SYNC.ok=r.ok;SYNC.at=Date.now()}).catch(()=>{SYNC.ok=false})},700)}
 async function pullFamily(){if(SYNC.pulling)return false;SYNC.pulling=true;let ch=false;
 try{const r=await fetch(FB+'/profiles.json',{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json()||{};
@@ -562,6 +563,7 @@ h+=`<div class="nw${cur?' cur':''}" style="--x:${OFF[k%8]}px">${cur?`<div class=
 h+=`<div class="pfox" style="${SELU%2?'left':'right'}:4px">${fox(84)}</div></div></div>`;
 const nm=p.mistakes.length;
 h+=`<div class="fm-sec">Практика</div><div class="fm-rail">
+<button class="fm-sub fill" style="--sc:#F5B400;--scd:#C08900" onclick="startWeak()"><i>⚡</i>Слабое${dueList().length?' ('+dueList().length+')':''}</button>
 <button class="fm-sub fill" style="--sc:#F97316;--scd:#C2410C" onclick="startCall(-1)"><i>🦊</i>Разговор с Лекси</button>
 <button class="fm-sub fill" style="--sc:#F5B400;--scd:#C08900" onclick="renderRoles()"><i>🎭</i>Сценки</button>
 <button class="fm-sub fill" style="--sc:#14B8A6;--scd:#0D857A" onclick="renderMedia('story')"><i>📖</i>Истории</button>
@@ -583,7 +585,7 @@ const u=COURSE[n.unit],done=!!p.done[n.id],st=`--c:${u.color};--cd:${u.dark}`;
 if(n.type==='chest'){if(done)return toast('Сундук уже открыт');return openChest(n)}
 if(n.type==='call')return modal(`<div class="t">📞 Звонок Лекси</div><div class="s">${done?'Поговорить ещё раз':'Разговор по теме «'+esc(u.title)+'»'} · 2–3 минуты</div><button class="btn" onclick="closeModal();startCall(${i})">${done?'Позвонить · +5 XP':'Позвонить · +15 XP'}</button>`,false,'pop',st);
 modal(`<div class="t">${esc(n.lesson.title)}</div><div class="s">Урок ${n.num} из ${n.of} · ${esc(u.title)}</div><button class="btn" onclick="closeModal();startLesson(${i},'${done?'replay':'new'}')">${done?'Повторить · +5 XP':'Начать · +10 XP'}</button>`,false,'pop',st)}
-function replayUnit(ui){const d=NODES.map((n,i)=>[n,i]).filter(x=>x[0].type==='lesson'&&x[0].unit===ui);startLesson(d[rnd(0,d.length-1)][1],'replay')}
+function replayUnit(ui){const d=NODES.map((n,i)=>[n,i]).filter(x=>x[0].type==='lesson'&&x[0].unit===ui);startLesson(weakestOf(d),'replay')}
 function fox(size){return `<svg width="${size}" height="${size}" viewBox="0 0 100 100"><polygon points="16,44 24,6 46,30" fill="#FF8A1F"/><polygon points="84,44 76,6 54,30" fill="#FF8A1F"/><polygon points="23,34 27,15 39,28" fill="#FFD3B0"/><polygon points="77,34 73,15 61,28" fill="#FFD3B0"/><ellipse cx="50" cy="56" rx="35" ry="31" fill="#FF8A1F"/><path d="M18 58 Q50 102 82 58 Q67 73 50 73 Q33 73 18 58Z" fill="#fff"/><circle cx="37" cy="50" r="6.5" fill="#1E1B4B"/><circle cx="63" cy="50" r="6.5" fill="#1E1B4B"/><circle cx="39" cy="48" r="2.2" fill="#fff"/><circle cx="65" cy="48" r="2.2" fill="#fff"/><ellipse cx="50" cy="64" rx="5.5" ry="4" fill="#1E1B4B"/><path d="M43 71 Q50 77 57 71" stroke="#1E1B4B" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>`}
 const QUESTS=[{id:'xp',t:'Набрать 30 XP',g:30,k:'xp',ico:'⚡'},{id:'les',t:'Пройти 2 урока',g:2,k:'lessons',ico:'📘'},{id:'call',t:'Поговорить с Лекси',g:1,k:'calls',ico:'📞'}];
 function claimFQ(){const p=P(),wk=weekKey();if(p.fq===wk)return;p.fq=wk;p.gems+=30;save();SND.chest();confetti();toast('+30 💎 за семейный квест!');renderHome()}
@@ -848,6 +850,26 @@ function renderSettings(){const p=P();show('settings',`
 function saveKey(){S.key=document.getElementById('key').value.trim();S.model=document.getElementById('model').value.trim()||'gemini-3.8-flash';saveLocal();SND.ok();toast('Сохранено')}
 function resetMe(){modal(`<div class="mtitle">Сбросить весь прогресс ${esc(P().nameRu)}?</div><button class="btn bad" onclick="const p=P();S.profiles[p.id]=newProfile(p.id,p.name,p.nameRu,p.avatar,p.theme);save();closeModal();renderSettings()">Сбросить</button><button class="link" onclick="closeModal()">Отмена</button>`,true)}
 
+/* ===================== MEMORY MODEL (spaced repetition, «мини-Birdbrain») ===================== */
+const IVL=[0,1,2,4,8,16,32],DAY=86400000;
+function hk(s){let h=5381;for(const c of String(s))h=((h<<5)+h+c.charCodeAt(0))|0;return 'k'+(h>>>0).toString(36)}
+function memItem(e){if(e.type==='pic'){const o=e.options.find(o=>o[0]===e.answer)||[];return {en:e.answer,ru:e.prompt,em:o[2]||'⭐',w:1}}
+if(e.type==='build'||e.type==='listen')return {en:e.answer,ru:e.ru||e.prompt};if(e.type==='speak')return {en:e.text,ru:e.ru};return null}
+function memUpdate(e,ok){const m=memItem(e);if(!m||!m.en||!m.ru)return;const p=P();p.mem=p.mem||{};const k=hk(m.en),now=Date.now();
+const x=p.mem[k]||{en:m.en,ru:m.ru,em:m.em||'',w:m.w?1:0,s:0,due:0,n:0,x:0};x.n++;L.failed=L.failed||{};
+if(ok){if(L.failed[k])x.due=now+DAY;else{x.s=Math.min(x.s+1,IVL.length-1);x.due=now+IVL[x.s]*DAY}}
+else{L.failed[k]=1;x.x++;x.s=Math.max(0,x.s-2);x.due=now+10*60000}
+p.mem[k]=x}
+function dueList(){const now=Date.now();return Object.values(P().mem||{}).filter(x=>x.due<=now).sort((a,b)=>a.s-b.s||a.due-b.due)}
+function weakList(n){const d=dueList();if(d.length>=n)return d.slice(0,n);const rest=Object.values(P().mem||{}).filter(x=>!d.includes(x)).sort((a,b)=>a.s-b.s||b.x-a.x);return d.concat(rest).slice(0,n)}
+function reviewItem(x,pool,kind){if(x.w){const W=uniqWords(learnedLessons()).filter(w=>w[0]!==x.en&&w[1]!==x.ru);return {type:'pic',prompt:x.ru,answer:x.en,options:shuffle([[x.en,x.ru,x.em||'⭐']].concat(shuffle(W).slice(0,3))),review:true}}
+if(kind==='speak')return {type:'speak',text:x.en,ru:x.ru,review:true};return Object.assign(mkBuild(kind,x.en,x.ru,pool),{review:true})}
+function lessonStrength(l){const m=P().mem||{};return l.phrases.reduce((a,x)=>a+((m[hk(tx(x[0]))]||{}).s||0),0)/l.phrases.length}
+function weakestOf(pairs){return pairs.slice().sort((a,b)=>lessonStrength(a[0].lesson)-lessonStrength(b[0].lesson))[0][1]}
+function startWeak(){const list=weakList(10);if(list.length<4)return toast('Пока мало данных — пройдите пару уроков, и здесь появятся ваши слабые места');
+const pool=learnedLessons().flatMap(l=>l.phrases.flatMap(x=>words(tx(x[0]))));const kinds=['build','listen','build','speak','listen'];
+const items=shuffle(list).map((x,i)=>reviewItem(x,pool,kinds[i%5]));L={node:null,mode:'weak',items,idx:0,correct:0,total:items.length,combo:0,maxCombo:0,wrong:0,start:Date.now(),title:'⚡ Слабые места',sub:'Персональное повторение'};lessonShell()}
+
 /* ===================== LESSON BUILD ===================== */
 function distract(target,pool,n){const t=new Set(words(target).map(w=>w.toLowerCase()));return shuffle([...new Set(pool.filter(w=>!t.has(w.toLowerCase())))]).slice(0,n)}
 function mkBuild(type,en,ru,pool){return {type,answer:en,prompt:ru,ru,tiles:shuffle(words(en).concat(distract(en,pool,3)))}}
@@ -855,7 +877,9 @@ function buildLesson(lesson){const ph=lesson.phrases.map(p=>[tx(p[0]),tx(p[1])])
 const wi=shuffle([...W.keys()]),pi=shuffle([...ph.keys()]);
 const pic=j=>{const ans=W[wi[j]];const opts=shuffle([ans].concat(shuffle(W.filter(w=>w!==ans)).slice(0,3)));return {type:'pic',prompt:ans[1],answer:ans[0],options:opts}};
 const B=j=>mkBuild('build',ph[pi[j]][0],ph[pi[j]][1],pool),Ls=j=>mkBuild('listen',ph[pi[j]][0],ph[pi[j]][1],pool),Sp=j=>({type:'speak',text:ph[pi[j]][0],ru:ph[pi[j]][1]});
-return [pic(0),B(0),Ls(2),pic(1),B(1),{type:'match',pairs:shuffle(W).slice(0,5)},Sp(0),B(3),Ls(4),B(5),Sp(3),Ls(6)]}
+const items=[pic(0),B(0),Ls(2),pic(1),B(1),{type:'match',pairs:shuffle(W).slice(0,5)},Sp(0),B(3),Ls(4),B(5),Sp(3),Ls(6)];
+const own=new Set(ph.map(p=>p[0])),rp=learnedLessons().flatMap(l=>l.phrases.flatMap(x=>words(tx(x[0]))));
+dueList().filter(x=>!x.w&&!own.has(x.en)).slice(0,2).forEach((x,i)=>items.splice(i?11:7,1,reviewItem(x,rp,i?'listen':'build')));return items}
 function buildMistakes(){const p=P();const m=shuffle(p.mistakes).slice(0,8);const pool=COURSE.flatMap(u=>u.lessons.flatMap(l=>l.phrases.flatMap(x=>words(tx(x[0])))));
 const items=m.map((x,i)=>Object.assign(mkBuild(i%2?'listen':'build',x[0],x[1],pool),{fromMistake:true}));if(m.length)items.push({type:'speak',text:m[0][0],ru:m[0][1],fromMistake:true});return items}
 
@@ -863,14 +887,14 @@ const items=m.map((x,i)=>Object.assign(mkBuild(i%2?'listen':'build',x[0],x[1],po
 let L=null;
 function startLesson(i,mode){const n=NODES[i];const items=buildLesson(n.lesson);L={node:n,mode,items,idx:0,correct:0,total:items.length,combo:0,maxCombo:0,wrong:0,start:Date.now(),title:n.lesson.title,sub:COURSE[n.unit].title};lessonShell()}
 function startMistakes(){if(!P().mistakes.length)return toast('Ошибок пока нет — отлично!');L={node:null,mode:'mistakes',items:buildMistakes(),idx:0,correct:0,combo:0,maxCombo:0,wrong:0,start:Date.now(),title:'Работа над ошибками',sub:'Повторение'};L.total=L.items.length;lessonShell()}
-function randomReplay(){const p=P();const d=NODES.map((n,i)=>[n,i]).filter(x=>x[0].type==='lesson'&&p.done[x[0].id]);if(!d.length)return toast('Сначала пройдите хотя бы один урок');startLesson(d[rnd(0,d.length-1)][1],'replay')}
+function randomReplay(){const p=P();const d=NODES.map((n,i)=>[n,i]).filter(x=>x[0].type==='lesson'&&p.done[x[0].id]);if(!d.length)return toast('Сначала пройдите хотя бы один урок');startLesson(weakestOf(d),'replay')}
 function lessonShell(){show('lesson',`<div class="lbar"><i id="fill"></i></div><div class="combo" id="combo"></div><div id="lbody"></div><div class="foot" id="lfoot"><button class="btn ok" id="chk" disabled onclick="doCheck()">Проверить</button></div><div id="sheet"></div>`,{title:L.title,sub:L.sub,cnt:'1/'+L.total,prog:0});renderEx()}
 function quitLesson(){modal(`${fox(90)}<div class="mtitle">Подождите, не уходите! Если выйти сейчас, прогресс урока пропадёт.</div><button class="btn" onclick="closeModal()">Продолжить урок</button><button class="link" style="color:var(--bad)" onclick="closeModal();goHome()">Выйти</button>`,true)}
 function setReady(on,showFoot){const c=document.getElementById('chk'),f=document.getElementById('lfoot');if(f)f.style.display=showFoot===false?'none':'block';if(c)c.disabled=!on}
 const lb=h=>document.getElementById('lbody').innerHTML=h;
 function updateBar(){const pct=Math.min(100,100*L.correct/L.total);const f=document.getElementById('fill');if(f)f.style.width=pct+'%';const g=document.getElementById('fmprog');if(g)g.style.width=pct+'%';const c=document.getElementById('fmcnt');if(c)c.textContent=Math.min(L.correct+1,L.total)+'/'+L.total}
 function renderEx(){const e=L.items[L.idx];L.answered=false;L.check=null;L.speakFails=0;document.getElementById('sheet').innerHTML='';setReady(false,true);updateBar();
-if(e.type==='pic')exPic(e);else if(e.type==='build'||e.type==='listen')exBuild(e);else if(e.type==='match')exMatch(e);else exSpeak(e);window.scrollTo(0,0)}
+if(e.type==='pic')exPic(e);else if(e.type==='build'||e.type==='listen')exBuild(e);else if(e.type==='match')exMatch(e);else exSpeak(e);if(e.review&&L.mode!=='weak'){const b=document.getElementById('lbody');if(b)b.insertAdjacentHTML('afterbegin','<div class="revtag">🔁 Повторение</div>')}window.scrollTo(0,0)}
 function exPic(e){lb(`<h2 class="ex-title">Выберите «${esc(e.prompt)}»</h2><div class="pic-grid">${e.options.map((o,i)=>`<button class="pic" onclick="pickCard(${i})"><div class="emo">${o[2]}</div><div class="cw">${esc(o[0])}</div></button>`).join('')}</div>`);L.sel=null;L.check=()=>({ok:e.options[L.sel][0]===e.answer,answer:e.answer,user:e.options[L.sel][0]})}
 function pickCard(i){if(L.answered)return;L.sel=i;document.querySelectorAll('.pic').forEach((c,j)=>c.classList.toggle('sel',j===i));say(L.items[L.idx].options[i][0]);setReady(true)}
 function exBuild(e){const listen=e.type==='listen';
@@ -898,7 +922,7 @@ catch(err){if(!document.getElementById('mic'))return;m.classList.remove('rec');m
 function skipSpeak(){L.noSpeak=true;L.correct++;nextEx()}
 function doCheck(){if(!L.check||L.answered)return;showResult(L.check())}
 const PRAISE=['Отлично!','Великолепно!','Так держать!','Супер!','Верно!','Прекрасно!'];
-function showResult(r){if(L.answered)return;L.answered=true;L.lastR=r;const e=L.items[L.idx];
+function showResult(r){if(L.answered)return;L.answered=true;L.lastR=r;const e=L.items[L.idx];if(e.type!=='match'&&L.mode!=='place')memUpdate(e,r.ok);
 if(r.ok){L.correct++;L.combo++;L.maxCombo=Math.max(L.maxCombo,L.combo);SND.ok();if(e.fromMistake){const p=P();p.mistakes=p.mistakes.filter(m=>m[0]!==(e.answer||e.text))}
 if([3,5,8,10,15].includes(L.combo)){const c=document.getElementById('combo');c.textContent='🔥 '+L.combo+' ПОДРЯД!';c.classList.remove('on');void c.offsetWidth;c.classList.add('on');setTimeout(()=>c.classList.remove('on'),1800);setTimeout(SND.combo,250)}}
 else{L.wrong++;L.combo=0;SND.bad();if(!r.soft||e.type==='speak')recordMistake(e);if(r.soft||L.maxWrong!=null)L.correct++;else L.items.push(Object.assign({},e))}
@@ -973,7 +997,7 @@ g.rules.map((r,k)=>`<div class="card"><div class="rnum" style="--c:${u.color}">$
 function learnedLessons(){const p=P();const ls=COURSE.flatMap(u=>u.lessons).filter(l=>p.done[l.id]);return ls.length?ls:[COURSE[0].lessons[0]]}
 function uniqWords(ls){const seenE=new Set(),seenR=new Set();return shuffle(ls.flatMap(l=>l.words)).filter(w=>{if(seenE.has(w[0])||seenR.has(w[1]))return false;seenE.add(w[0]);seenR.add(w[1]);return true})}
 function renderPractice(){const n=P().mistakes.length;
-const T=[["startPractice('speak')",'🗣️','Говорение','8 фраз вслух','#2F6BFF','#1847C2'],["startPractice('listen')",'🎧','Аудирование','8 фраз на слух','#8B5CF6','#6532D8'],["startPractice('words')",'🔤','Слова','Картинки и пары','#00A88F','#007F6C'],['startMistakes()','🩹','Ошибки',n?n+' фраз':'пока нет','#E5484D','#BE123C'],['startCall(-1)','🦊','Лекси','Разговор голосом','#F97316','#C2410C'],['renderRoles()','🎭','Сценки','Ролевые диалоги','#F5B400','#C08900'],["renderMedia('story')",'📖','Истории','Диалоги с вопросами','#14B8A6','#0D857A'],["renderMedia('radio')",'📻','Радио','Только на слух','#334155','#1E293B']];
+const T=[['startWeak()','⚡','Слабое',dueList().length?dueList().length+' к повтору':'по вашим ошибкам','#F59E0B','#B45309'],["startPractice('speak')",'🗣️','Говорение','8 фраз вслух','#2F6BFF','#1847C2'],["startPractice('listen')",'🎧','Аудирование','8 фраз на слух','#8B5CF6','#6532D8'],["startPractice('words')",'🔤','Слова','Картинки и пары','#00A88F','#007F6C'],['startMistakes()','🩹','Ошибки',n?n+' фраз':'пока нет','#E5484D','#BE123C'],['startCall(-1)','🦊','Лекси','Разговор голосом','#F97316','#C2410C'],['renderRoles()','🎭','Сценки','Ролевые диалоги','#F5B400','#C08900'],["renderMedia('story')",'📖','Истории','Диалоги с вопросами','#14B8A6','#0D857A'],["renderMedia('radio')",'📻','Радио','Только на слух','#334155','#1E293B']];
 show('practice',`<div class="small" style="margin:0 2px 12px">Тренировки по пройденным урокам — без нового материала. +5 XP за каждую.</div><div class="pgrid">${T.map(t=>`<button class="ptile" style="--sc:${t[4]};--scd:${t[5]}" onclick="${t[0]}"><i>${t[1]}</i><b>${t[2]}</b><span>${t[3]}</span></button>`).join('')}</div>`,{title:'Практика',sub:'Тренировки'})}
 function startPractice(kind){const ls=learnedLessons();const ph=shuffle(ls.flatMap(l=>l.phrases.map(p=>[tx(p[0]),tx(p[1])])));const W=uniqWords(ls);const pool=ph.flatMap(p=>words(p[0]));let items=[];
 if(kind==='speak')items=ph.slice(0,8).map(p=>({type:'speak',text:p[0],ru:p[1]}));
