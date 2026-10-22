@@ -16,7 +16,7 @@ body[data-kid="tamina"]{background:linear-gradient(170deg,#FFE6F0 0%,#FFF7FA 40%
 body[data-kid="sagi"]{background:linear-gradient(170deg,#EFE8FF 0%,#FAF8FF 45%,#FFF3E3 100%) fixed}
 button,input{font-family:inherit}
 #app{max-width:480px;margin:0 auto}
-.phone{padding:var(--sat) 16px 130px;min-height:100vh}
+.phone{padding:var(--sat) 16px 130px;min-height:100vh;overflow-x:clip}
 h1,h2,.uf{font-family:Unbounded,Nunito,system-ui,sans-serif;font-weight:800;letter-spacing:-.4px}
 .muted{color:var(--muted);font-weight:700}
 .small{font-size:14px;color:var(--muted)}
@@ -83,7 +83,7 @@ h1,h2,.uf{font-family:Unbounded,Nunito,system-ui,sans-serif;font-weight:800;lett
 .fm-kid::after{content:"";position:absolute;right:-30px;bottom:-50px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.12)}
 /* path */
 .nodes{position:relative;padding:48px 0 4px}
-.nw{position:relative;display:flex;justify-content:center;margin:0 0 30px;transform:translateX(var(--x))}
+.nw{position:relative;display:flex;justify-content:center;width:96px;margin:0 auto 30px;transform:translateX(var(--x))}
 .node{width:76px;height:68px;border-radius:50%;border:0;background:var(--c);box-shadow:0 8px 0 var(--cd);color:#fff;font-size:30px;font-weight:900;display:flex;align-items:center;justify-content:center;transition:transform .07s,box-shadow .07s}
 .node:active{transform:translateY(6px);box-shadow:0 2px 0 var(--cd)}
 .node.locked{background:#E4E6F3;box-shadow:0 8px 0 #C9CCE0;color:#A3A7C2}
@@ -396,12 +396,28 @@ const TH=k=>THEMES[k]||THEMES.adil;
 const LS='famlingo_v1';
 function newProfile(id,name,nameRu,avatar,theme){return {id,name,nameRu,avatar,theme,xp:0,gems:50,streak:0,best:0,lastDay:null,freezes:1,done:{},mistakes:[],quest:{day:null,xp:0,lessons:0,calls:0,claimed:{}},calls:[],legend:{},roles:{}}}
 function load(){try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null}}
-function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+function save(){if(S.current&&S.profiles[S.current]){S.profiles[S.current].updated=Date.now();pushProfile()}saveLocal()}
+/* ---------- family sync (Firebase RTDB, branch famlingo) ---------- */
+const FB='https://familymath-4371e-default-rtdb.firebaseio.com/famlingo/v1';
+let pushT=null,SYNC={ok:null,at:0,pulling:false};
+function normProfile(p){p.done=p.done||{};p.mistakes=p.mistakes||[];p.calls=p.calls||[];p.legend=p.legend||{};p.roles=p.roles||{};p.days=p.days||[];p.quest=p.quest||{day:null,xp:0,lessons:0,calls:0,claimed:{}};p.quest.claimed=p.quest.claimed||{};p.week=p.week||{key:'',xp:0};p.theme=p.theme||(THEMES[p.id]?p.id:'teal');['xp','gems','streak','best','freezes'].forEach(k=>p[k]=p[k]||0);return p}
+function pushProfile(){const p=S.profiles[S.current];if(!p)return;clearTimeout(pushT);pushT=setTimeout(()=>{fetch(FB+'/profiles/'+encodeURIComponent(p.id)+'.json',{method:'PUT',body:JSON.stringify(p)}).then(r=>{SYNC.ok=r.ok;SYNC.at=Date.now()}).catch(()=>{SYNC.ok=false})},700)}
+async function pullFamily(){if(SYNC.pulling)return false;SYNC.pulling=true;let ch=false;
+try{const r=await fetch(FB+'/profiles.json',{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json()||{};
+Object.values(j).forEach(rp=>{if(!rp||!rp.id)return;const lp=S.profiles[rp.id];if(!lp||(rp.updated||0)>(lp.updated||0)){S.profiles[rp.id]=normProfile(rp);ch=true}});
+const cur=S.current&&S.profiles[S.current];if(cur&&cur.updated&&(!j[cur.id]||(j[cur.id].updated||0)<cur.updated))pushProfile();
+SYNC.ok=true;SYNC.at=Date.now();if(ch)saveLocal()}catch(e){SYNC.ok=false}
+SYNC.pulling=false;return ch}
+function weekKey(){const d=new Date();const k=(d.getDay()+6)%7;d.setDate(d.getDate()-k);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+const weekXp=p=>p.week&&p.week.key===weekKey()?p.week.xp:0;
+function sharedStreak(a,b){const A=new Set(a.days||[]),B=new Set(b.days||[]);const d=new Date();if(!(A.has(today())&&B.has(today())))d.setDate(d.getDate()-1);let n=0;
+for(;;){const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');if(A.has(k)&&B.has(k)){n++;d.setDate(d.getDate()-1)}else break}return n}
 let S=load()||{v:1,current:null,sound:true,rate:0.95,key:'',model:'gemini-3.8-flash',profiles:{adil:newProfile('adil','Adil','Адиль','🧔','adil'),sagi:newProfile('sagi','Sagi','Саги','👩','sagi')}};
 if(S.model==='gemini-2.5-flash')S.model='gemini-3.8-flash';
-Object.values(S.profiles).forEach(p=>{if(!p.theme)p.theme=THEMES[p.id]?p.id:'teal';if(!p.legend)p.legend={};if(!p.roles)p.roles={}});
+Object.values(S.profiles).forEach(normProfile);
 if(S.current&&!S.profiles[S.current])S.current=null;
-save();
+saveLocal();
 const P=()=>S.profiles[S.current];
 let VIEW='pick',SELU=null;
 const app=document.getElementById('app');
@@ -448,8 +464,8 @@ function listenOnce(){return new Promise((res,rej)=>{if(!SR)return rej('nosr');c
 /* ===================== PROGRESS ===================== */
 function ensureQuest(){const p=P(),t=today();if(p.quest.day!==t)p.quest={day:t,xp:0,lessons:0,calls:0,claimed:{}}}
 function streakOf(p){if(!p.lastDay)return 0;const d=dayDiff(p.lastDay,today());if(d<=1)return p.streak;if(d===2&&p.freezes>0)return p.streak;return 0}
-function touchDay(){const p=P(),t=today();if(p.lastDay===t)return false;const d=p.lastDay?dayDiff(p.lastDay,t):99;if(d===1)p.streak++;else if(d===2&&p.freezes>0){p.freezes--;p.streak++}else p.streak=1;p.best=Math.max(p.best,p.streak);p.lastDay=t;return true}
-function addXP(n){ensureQuest();const nd=touchDay();const p=P();p.xp+=n;p.quest.xp+=n;save();return nd}
+function touchDay(){const p=P(),t=today();if(p.lastDay===t)return false;const d=p.lastDay?dayDiff(p.lastDay,t):99;if(d===1)p.streak++;else if(d===2&&p.freezes>0){p.freezes--;p.streak++}else p.streak=1;p.best=Math.max(p.best,p.streak);p.lastDay=t;p.days=(p.days||[]).concat(t).slice(-400);return true}
+function addXP(n){ensureQuest();const nd=touchDay();const p=P();p.xp+=n;p.quest.xp+=n;const wk=weekKey();if(!p.week||p.week.key!==wk)p.week={key:wk,xp:0};p.week.xp+=n;save();return nd}
 function curIdx(){const p=P();const i=NODES.findIndex(n=>!p.done[n.id]);return i<0?NODES.length:i}
 function recordMistake(e){const en=e.answer||e.text,ru=e.ru||e.prompt;if(!en||!ru)return;const p=P();if(!p.mistakes.some(m=>m[0]===en)){p.mistakes.push([en,ru]);if(p.mistakes.length>30)p.mistakes.shift()}}
 
@@ -492,14 +508,16 @@ function fmBack(){
 function topbar(o){return `<div class="fm-top"><button class="fm-back" aria-label="Назад" onclick="goBackUI()">←</button><div class="fm-ttl"><b>${esc(o.title)}</b>${o.sub?`<span>${esc(o.sub)}</span>`:''}</div>${o.cnt!=null?`<div class="fm-cnt" id="fmcnt">${esc(o.cnt)}</div>`:''}${o.right||''}${o.prog!=null?`<div class="fm-prog"><i id="fmprog" style="width:${o.prog}%"></i></div>`:''}</div>`}
 function show(view,html,top){VIEW=view;applyTheme();app.innerHTML=`<div class="phone">${top?topbar(top):''}${html}</div>`;window.scrollTo(0,0);if(!_inPop)syncHistory()}
 function render(){if(!S.current)return renderPick();if(VIEW==='settings')return renderSettings();renderHome()}
-function goHome(){hush();stopRec();L=null;C=null;renderHome()}
+function goHome(){hush();stopRec();L=null;C=null;renderHome();bgPull()}
+function bgPull(force){if(!force&&Date.now()-SYNC.at<30000&&SYNC.ok!==null)return;pullFamily().then(ch=>{if((ch||force)&&(VIEW==='home'||VIEW==='pick'))(VIEW==='home'?renderHome:renderPick)()})}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)bgPull()});
 
 /* ===================== PROFILES ===================== */
-function renderPick(){S.current=null;save();
+function renderPick(){S.current=null;saveLocal();
 show('pick',`<div class="fm-brand">Fam<br>Lingo</div><p class="muted">Кто сегодня учится английскому?</p>`+
 Object.values(S.profiles).map(p=>{const t=TH(p.theme);return `<button class="fm-kid" style="--k:${t[0]};--kd:${t[1]}" onclick="pickProfile('${p.id}')"><div class="av">${p.avatar}</div><div><b>${esc(p.nameRu)}</b><span>⚡ ${p.xp} XP · 🔥 ${streakOf(p)} · уроков ${Object.keys(p.done).filter(k=>/l\d+$/.test(k)).length}</span></div></button>`}).join('')+
 `<button class="btn ghost" onclick="addProfile()">+ Добавить члена семьи</button>`)}
-function pickProfile(id){S.current=id;save();SELU=null;goHome()}
+function pickProfile(id){S.current=id;saveLocal();SELU=null;goHome()}
 function addProfile(){modal(`<div class="mtitle">Новый профиль</div><input class="field" id="pn" placeholder="Имя по-русски (Чингиз)"><input class="field" id="pe" placeholder="Имя латиницей (Chingiz)"><button class="btn" onclick="mkProfile()">Создать</button>`,true)}
 function mkProfile(){const ru=document.getElementById('pn').value.trim(),en=document.getElementById('pe').value.trim();if(!ru||!en)return toast('Заполните оба поля');
 let theme='teal',av='🧑';if(/чингиз|chingiz/i.test(ru+en)){theme='chingiz';av='⚽'}else if(/тамин|tamina/i.test(ru+en)){theme='tamina';av='🌸'}else if(Object.keys(S.profiles).length%2)theme='orange';
@@ -532,7 +550,11 @@ h+=`<div class="fm-sec">Практика</div><div class="fm-rail">
 <button class="fm-sub fill" style="--sc:#E5484D;--scd:#BE123C" onclick="startMistakes()"><i>🩹</i>Ошибки${nm?' ('+nm+')':''}</button></div>`;
 h+=`<div class="fm-sec">Задания на сегодня</div><div class="card">${QUESTS.map(x=>{const v=Math.min(p.quest[x.k],x.g),full=v>=x.g,cl=p.quest.claimed[x.id];return `<div class="row qrow"><div style="font-size:30px">${x.ico}</div><div class="grow">${x.t}<div class="qbar"><i style="width:${100*v/x.g}%"></i></div><div class="small">${v} / ${x.g}</div></div><button class="chip acc" ${full&&!cl?'':'disabled'} onclick="claim('${x.id}')">${cl?'✓':'+10 💎'}</button></div>`}).join('')}
 <div class="row qrow"><div style="font-size:30px">🧊</div><div class="grow">Заморозка серии<div class="small">Спасает серию при пропуске дня · ${p.freezes}/2</div></div><button class="chip acc" ${p.gems>=50&&p.freezes<2?'':'disabled'} onclick="buyFreeze()">50 💎</button></div></div>`;
-h+=`<div class="fm-sec">Семья</div><div class="card">${Object.values(S.profiles).sort((a,b)=>b.xp-a.xp).map((q,i)=>`<div class="row qrow"><div class="mini-av" style="--k:${TH(q.theme)[0]};background:${TH(q.theme)[4]}">${q.avatar}</div><div class="grow">${i===0&&q.xp>0?'👑 ':''}${esc(q.nameRu)}${q.id===p.id?' (вы)':''}<div class="small">🔥 ${streakOf(q)} · рекорд ${q.best}</div></div><div class="uf" style="color:${TH(q.theme)[0]}">${q.xp}</div></div>`).join('')}<div class="small" style="margin-top:8px">Прогресс хранится на этом телефоне. Общая таблица семьи — следующим шагом через Firebase.</div></div>`;
+const fam=Object.values(S.profiles),wk=weekKey(),dLeft=7-((new Date().getDay()+6)%7);
+const goal=Math.max(2,fam.length)*150,sum=fam.reduce((a,q)=>a+weekXp(q),0),fqDone=sum>=goal,fqCl=p.fq===wk;
+h+=`<div class="fm-sec">Семейный квест</div><div class="card"><div class="row"><div style="font-size:30px">🤝</div><div class="grow">Вместе набрать ${goal} XP за неделю<div class="qbar"><i style="width:${Math.min(100,100*sum/goal)}%"></i></div><div class="small">${sum} / ${goal} · осталось ${dLeft} ${plural(dLeft,'день','дня','дней')}</div></div><button class="chip acc" ${fqDone&&!fqCl?'':'disabled'} onclick="claimFQ()">${fqCl?'✓':'+30 💎'}</button></div></div>`;
+h+=`<div class="fm-sec">Лига недели</div><div class="card">${fam.slice().sort((a,b)=>weekXp(b)-weekXp(a)||b.xp-a.xp).map((q,i)=>{const t=TH(q.theme);const ss=q.id!==p.id?sharedStreak(p,q):0;return `<div class="row qrow"><div class="uf" style="width:22px;color:${i===0?'#F5B400':'var(--muted)'}">${i+1}</div><div class="mini-av" style="--k:${t[0]};background:${t[4]}">${q.avatar}</div><div class="grow">${i===0&&weekXp(q)>0?'👑 ':''}${esc(q.nameRu)}${q.id===p.id?' (вы)':''}<div class="small">🔥 ${streakOf(q)}${ss?' · общая серия '+ss:''} · всего ⚡${q.xp}</div></div><div class="uf" style="color:${t[0]}">${weekXp(q)}</div></div>`}).join('')}
+<div class="small" style="margin-top:8px">${SYNC.ok===false?'⚠️ Нет связи с облаком — прогресс сохранён на телефоне и отправится позже.':SYNC.ok?'☁️ Синхронизировано '+new Date(SYNC.at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}):'☁️ Синхронизация…'} · XP за неделю, лига обновляется в понедельник.</div></div>`;
 show('home',h,{title:humanDate(),sub:p.nameRu+' · английский',right:`<button class="fm-ico" aria-label="Настройки" onclick="renderSettings()">⚙️</button>`});setTimeout(()=>{const a=document.querySelector('.fm-rail .fm-sub.on');if(a){const r=a.parentNode;r.scrollLeft=Math.max(0,a.offsetLeft-r.clientWidth/2+a.offsetWidth/2)}},0)}
 function startNode(i){const n=NODES[i],p=P();if(n.type==='chest')return openChest(n);if(n.type==='call')return startCall(i);startLesson(i,p.done[n.id]?'replay':'new')}
 function tapNode(i){const n=NODES[i],p=P(),ci=curIdx();SND.tap();
@@ -544,6 +566,7 @@ modal(`<div class="t">${esc(n.lesson.title)}</div><div class="s">Урок ${n.nu
 function replayUnit(ui){const d=NODES.map((n,i)=>[n,i]).filter(x=>x[0].type==='lesson'&&x[0].unit===ui);startLesson(d[rnd(0,d.length-1)][1],'replay')}
 function fox(size){return `<svg width="${size}" height="${size}" viewBox="0 0 100 100"><polygon points="16,44 24,6 46,30" fill="#FF8A1F"/><polygon points="84,44 76,6 54,30" fill="#FF8A1F"/><polygon points="23,34 27,15 39,28" fill="#FFD3B0"/><polygon points="77,34 73,15 61,28" fill="#FFD3B0"/><ellipse cx="50" cy="56" rx="35" ry="31" fill="#FF8A1F"/><path d="M18 58 Q50 102 82 58 Q67 73 50 73 Q33 73 18 58Z" fill="#fff"/><circle cx="37" cy="50" r="6.5" fill="#1E1B4B"/><circle cx="63" cy="50" r="6.5" fill="#1E1B4B"/><circle cx="39" cy="48" r="2.2" fill="#fff"/><circle cx="65" cy="48" r="2.2" fill="#fff"/><ellipse cx="50" cy="64" rx="5.5" ry="4" fill="#1E1B4B"/><path d="M43 71 Q50 77 57 71" stroke="#1E1B4B" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>`}
 const QUESTS=[{id:'xp',t:'Набрать 30 XP',g:30,k:'xp',ico:'⚡'},{id:'les',t:'Пройти 2 урока',g:2,k:'lessons',ico:'📘'},{id:'call',t:'Поговорить с Лекси',g:1,k:'calls',ico:'📞'}];
+function claimFQ(){const p=P(),wk=weekKey();if(p.fq===wk)return;p.fq=wk;p.gems+=30;save();SND.chest();confetti();toast('+30 💎 за семейный квест!');renderHome()}
 function claim(id){const p=P();if(p.quest.claimed[id])return;p.quest.claimed[id]=true;p.gems+=10;save();SND.chest();toast('+10 💎');renderHome()}
 function buyFreeze(){const p=P();if(p.gems<50||p.freezes>=2)return;p.gems-=50;p.freezes++;save();SND.ok();toast('🧊 Заморозка куплена');renderHome()}
 
@@ -552,11 +575,11 @@ function renderSettings(){const p=P();show('settings',`
 <div class="card"><div class="row"><div class="avatar">${p.avatar}</div><div class="grow"><b class="uf">${esc(p.nameRu)}</b><div class="small">Текущий профиль</div></div><button class="chip" onclick="renderPick()">Сменить</button></div></div>
 <div class="card">Ключ Gemini API (для разговора с Лекси)<input class="field" id="key" type="password" placeholder="Вставьте ключ" value="${esc(S.key)}"><div class="small">Бесплатно: aistudio.google.com → Get API key. Ключ хранится только на этом телефоне.</div>
 <div style="margin-top:12px">Модель<input class="field" id="model" value="${esc(S.model)}"></div><button class="btn" style="margin-top:8px" onclick="saveKey()">Сохранить</button></div>
-<div class="card">Скорость речи: <span id="rv">${S.rate}</span><input type="range" min="0.6" max="1.2" step="0.05" value="${S.rate}" style="width:100%;accent-color:var(--acc)" oninput="S.rate=+this.value;document.getElementById('rv').textContent=this.value;save()"><button class="chip" style="margin-top:8px" onclick="say('Hello! Nice to meet you.')">🔊 Проверить голос</button></div>
-<div class="card"><div class="row"><div class="grow">Звуки</div><button class="chip acc" onclick="S.sound=!S.sound;save();renderSettings()">${S.sound?'Вкл':'Выкл'}</button></div></div>
+<div class="card">Скорость речи: <span id="rv">${S.rate}</span><input type="range" min="0.6" max="1.2" step="0.05" value="${S.rate}" style="width:100%;accent-color:var(--acc)" oninput="S.rate=+this.value;document.getElementById('rv').textContent=this.value;saveLocal()"><button class="chip" style="margin-top:8px" onclick="say('Hello! Nice to meet you.')">🔊 Проверить голос</button></div>
+<div class="card"><div class="row"><div class="grow">Звуки</div><button class="chip acc" onclick="S.sound=!S.sound;saveLocal();renderSettings()">${S.sound?'Вкл':'Выкл'}</button></div></div>
 <div class="card"><div class="row"><div class="grow">Распознавание речи<div class="small">${SR?'Доступно':'Недоступно — откройте в Chrome'}</div></div></div></div>
 <button class="link" style="color:var(--bad)" onclick="resetMe()">Сбросить прогресс профиля</button>`,{title:'Настройки',sub:p.nameRu})}
-function saveKey(){S.key=document.getElementById('key').value.trim();S.model=document.getElementById('model').value.trim()||'gemini-3.8-flash';save();SND.ok();toast('Сохранено')}
+function saveKey(){S.key=document.getElementById('key').value.trim();S.model=document.getElementById('model').value.trim()||'gemini-3.8-flash';saveLocal();SND.ok();toast('Сохранено')}
 function resetMe(){modal(`<div class="mtitle">Сбросить весь прогресс ${esc(P().nameRu)}?</div><button class="btn bad" onclick="const p=P();S.profiles[p.id]=newProfile(p.id,p.name,p.nameRu,p.avatar,p.theme);save();closeModal();renderSettings()">Сбросить</button><button class="link" onclick="closeModal()">Отмена</button>`,true)}
 
 /* ===================== LESSON BUILD ===================== */
@@ -712,7 +735,7 @@ show('roles',`<div class="small" style="margin:0 2px 12px">Ролевые диа
 function startRole(id){const r=ROLES.find(x=>x.id===id);
 startConv({kind:'role',role:r,topic:r.scene+' The learner has these goals: '+r.goals.join('; ')+'. Play your role naturally, stay in the scene, and lead the learner step by step through the goals without listing them.',title:r.ico+' '+r.title,sub:'Сценка'})}
 
-render();
+render();bgPull(true);
 </script>
 </body>
 </html>
